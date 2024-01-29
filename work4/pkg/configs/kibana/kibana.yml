@@ -1,0 +1,6 @@
+i18n.locale: "zh-CN"
+
+server.host: "0.0.0.0"
+
+elasticsearch.username: "kibana_system"
+elasticsearch.password: "work123456"

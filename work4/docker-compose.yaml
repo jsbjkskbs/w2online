@@ -1,0 +1,123 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql:${MYSQL_VERSION}
+    container_name: 'work_mysql'
+    volumes:
+      - ./pkg/configs/sql:/docker-entrypoint-initdb.d
+      - ./pkg/data/sql:/var/lib/mysql
+    ports:
+      - ${MYSQL_PORT}:3306
+    privileged: true
+    environment:
+      - MYSQL_DATABASE=work
+      - MYSQL_USER=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+
+  redis:
+    image: redis:7
+    container_name: work_redis
+    ports:
+      - ${REDIS_PORT}:6379
+    volumes:
+      - ./pkg/configs/redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./pkg/data/redis/:/data
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+  es01:
+    image: elasticsearch:7.17.16
+    container_name: es01
+    environment:
+      - node.name=es01
+      - cluster.name=${CLUSTER_NAME}
+      - discovery.seed_hosts=es02,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - ${ES_PORT}:9200
+    volumes:
+      - ./pkg/configs/es/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./pkg/data/es/es01:/usr/share/elasticsearch/data
+      - ./pkg/configs/es/plugins:/usr/share/elasticsearch/plugins
+    networks:
+      - elastic
+
+  es02:
+    image: elasticsearch:7.17.16
+    container_name: es02
+    environment:
+      - node.name=es02
+      - cluster.name=${CLUSTER_NAME}
+      - discovery.seed_hosts=es01,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./pkg/configs/es/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./pkg/data/es/es02:/usr/share/elasticsearch/data
+      - ./pkg/configs/es/plugins:/usr/share/elasticsearch/plugins
+    networks:
+      - elastic
+
+  es03:
+    image: elasticsearch:7.17.16
+    container_name: es03
+    environment:
+      - node.name=es03
+      - cluster.name=${CLUSTER_NAME}
+      - discovery.seed_hosts=es01,es02
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./pkg/configs/es/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./pkg/data/es/es03:/usr/share/elasticsearch/data
+      - ./pkg/configs/es/plugins:/usr/share/elasticsearch/plugins
+    networks:
+      - elastic
+
+  kib01:
+    image: kibana:7.17.16
+    container_name: kib01
+    ports:
+      - ${KIBANA_PORT}:5601
+    environment:
+      ELASTICSEARCH_URL: http://es01:9200
+      ELASTICSEARCH_HOSTS: '["http://es01:9200","http://es02:9200","http://es03:9200"]'
+    volumes:
+      - ./pkg/configs/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+    networks:
+      - elastic
+
+  work:
+    image: work:latest
+    container_name: work_main
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "12345:8888"
+    depends_on:
+      - mysql
+      - redis
+      - es01
+    profiles: 
+    - release
+
+networks:
+  elastic:
+    driver: bridge

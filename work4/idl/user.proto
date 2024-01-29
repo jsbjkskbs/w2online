@@ -1,0 +1,115 @@
+syntax = "proto3";
+
+package user;
+
+import "api.proto";
+import "base.proto";
+
+option go_package = "base/user";
+
+message UserRegisterRequest {
+    string username = 1[(api.go_tag)='json:"username,required"'];
+    string password = 2[(api.go_tag)='json:"password,required"'];
+}
+
+message UserRegisterResponse {
+    Status base = 1;
+    string access_token = 2;
+    string refresh_token = 3;
+}
+
+message UserLoginRequest {
+    string username = 1[(api.go_tag)='json:"username,required"'];
+    string password = 2[(api.go_tag)='json:"password,required"'];
+    string code = 3;
+}
+
+message UserLoginResponse {
+    Status base = 1;
+    User data = 2;
+    string access_token = 3;
+    string refresh_token = 4;
+}
+
+message UserInfoRequest {
+    string user_id = 1[(api.query)="user_id"];
+    string token = 2[(api.query)="token"];
+    string access_token = 3[(api.header)="Access-Token"];
+    string refresh_token = 4[(api.header)="Refresh-Token"];
+}
+
+message UserInfoResponse {
+    Status base = 1;
+    User data = 2;
+}
+
+message UserAvatarUploadRequest {
+    string access_token = 1[(api.header)="Access-Token"];
+    string refresh_token = 2[(api.header)="Refresh-Token"];
+    bytes data = 3[(api.body)="data"];
+}
+
+message UserAvatarUploadResponse {
+    Status base = 1;
+    message UserAvatarUploadResponseData {
+        string id = 1;
+        string username = 2;
+        string password = 3;
+        string avatar_url = 4;
+        string created_at = 5;
+        string updated_at = 6;
+        string deleted_at = 7;
+    }
+    UserAvatarUploadResponseData data = 2;
+}
+
+message AuthMfaQrcodeRequest { 
+    string access_token = 1[(api.header)="Access-Token"];
+    string refresh_token = 2[(api.header)="Refresh-Token"];
+}
+
+message AuthMfaQrcodeResponse {
+    Status base = 1;
+    message Qrcode {
+        string secret = 1;
+        string qrcode = 2;
+    }
+    Qrcode data = 2;
+}
+
+message AuthMfaBindRequest {
+    string access_token = 1[(api.header)="Access-Token"];
+    string refresh_token = 2[(api.header)="Refresh-Token"];
+    string code = 3[(api.body)="code"];
+    string secret = 4[(api.body)="secret"];
+}
+
+message AuthMfaBindResponse {
+    Status base = 1;
+}
+
+service UserHandler {
+    rpc UserRegister(UserRegisterRequest) returns(UserRegisterResponse) {
+        option (api.post) = "/user/register/";
+    }
+
+    rpc UserLogin(UserLoginRequest) returns(UserLoginResponse) {
+        option (api.post) = "/user/login/";
+    }
+
+    rpc UserInfo(UserInfoRequest) returns(UserInfoResponse) {
+        option (api.get) = "/user/info/";
+    }
+
+    rpc UserAvatarUpload(UserAvatarUploadRequest) returns(UserAvatarUploadResponse) {
+        option (api.put) = "/user/avatar/upload/";
+    }
+
+    rpc AuthMfaQrcode(AuthMfaQrcodeRequest) returns(AuthMfaQrcodeResponse) {
+        option (api.get) = "/auth/mfa/qrcode/";
+    }
+
+    rpc AuthMfaBind(AuthMfaBindRequest) returns(AuthMfaBindResponse) {
+        option (api.post) = "/auth/mfa/bind/";
+    }
+}

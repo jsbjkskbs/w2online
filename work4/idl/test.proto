@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package test;
+
+option go_package = "test";
+
+import "api.proto";
+
+message TestRequest {
+    bytes data = 1[(api.body)="data"];
+}
+
+message TestResponse {
+    string msg = 1;
+}
+
+service TestHandler {
+    rpc Test(TestRequest) returns(TestResponse) {
+        option (api.post) = "/test";
+    }
+}

@@ -1,0 +1,1 @@
+docker build -t work:latest -f ./docker-build/Dockerfile .

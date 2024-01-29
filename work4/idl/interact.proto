@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package interact;
+
+import "api.proto";
+import "base.proto";
+
+option go_package = "base/interact";
+
+message LikeActionRequest {
+    string access_token = 1[(api.header)="Access-Token"];
+    string refresh_token = 2[(api.header)="Refresh-Token"];
+    string video_id = 3[(api.body)="video_id"];
+    string comment_id = 4[(api.body)="comment_id"];
+    string action_type = 5[(api.body)="action_type"];
+}
+
+message LikeActionResponse {
+    Status base = 1;
+}
+
+message LikeListRequest {
+    string user_id = 1[(api.query)="user_id"];
+    string page_size = 2[(api.query)="page_size"];
+    string page_num = 3[(api.query)="page_num"];
+    string access_token = 4[(api.header)="Access-Token"];
+    string refresh_token = 5[(api.header)="Refresh-Token"];
+}
+
+message LikeListResponse {
+    Status base = 1;
+    message LikeListResponseData {
+        repeated Video items = 1;
+    }
+    LikeListResponseData data = 2;
+}
+
+message CommentPublishRequest {
+    string access_token = 1[(api.header)="Access-Token"];
+    string refresh_token = 2[(api.header)="Refresh-Token"];
+    string video_id = 3[(api.body)="video_id"];
+    string comment_id = 4[(api.body)="comment_id"];
+    string content = 5[(api.go_tag)='json:"content,required"'];
+}
+
+message CommentPublishResponse {
+    Status base = 1;
+}
+
+message CommentListRequest {
+    string video_id = 1[(api.query)="video_id"];
+    string comment_id = 2[(api.query)="comment_id"];
+    int64 page_size = 3[(api.query)="page_size"];
+    int64 page_num = 4[(api.query)="page_num"];
+    string access_token = 5[(api.header)="Access-Token"];
+    string refresh_token = 6[(api.header)="Refresh-Token"];
+}
+
+message CommentListResponse {
+    Status base = 1;
+    message CommentListResponseData {
+        repeated Comment items = 1;
+    }
+    CommentListResponseData data = 2;
+}
+
+message CommentDeleteRequest {
+    string access_token = 1[(api.header)="Access-Token"];
+    string refresh_token = 2[(api.header)="Refresh-Token"];
+    string video_id = 3[(api.body)="video_id"];
+    string comment_id = 4[(api.body)="comment_id"];
+}
+
+message CommentDeleteResponse {
+    Status base = 1;
+}
+
+service InteractHandler {
+    rpc LikeAction(LikeActionRequest) returns(LikeActionResponse) {
+        option (api.post) = "/like/action/";
+    }
+
+    rpc LikeList(LikeListRequest) returns(LikeListResponse) {
+        option (api.get) = "/like/list/";
+    }
+
+    rpc CommentPublish(CommentPublishRequest) returns(CommentPublishResponse) {
+        option (api.post) = "/comment/publish/";
+    }
+
+    rpc CommentList(CommentListRequest) returns(CommentListResponse) {
+        option (api.get) = "/comment/list/";
+    }
+
+    rpc CommentDelete(CommentDeleteRequest) returns(CommentDeleteResponse) {
+        option (api.delete) = "/comment/delete/";
+    }
+}

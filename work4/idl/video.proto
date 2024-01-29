@@ -1,0 +1,166 @@
+syntax = "proto3";
+
+package video;
+
+import "api.proto";
+import "base.proto";
+
+option go_package = "base/video";
+
+message VideoFeedRequest {
+    string latest_time = 1[(api.query)="latest_time"];
+}
+
+message VideoFeedResponse {
+    Status base = 1;
+    message VideoFeedResponseData {
+        repeated Video items = 1;
+    }
+    VideoFeedResponseData data = 2;
+}
+
+message VideoPublishStartRequest {
+    string access_token = 1[(api.header)="Access-Token"];
+    string refresh_token = 2[(api.header)="Refresh-Token"];
+    string title = 3[(api.body)="title"];
+    string description = 4[(api.body)="description"];
+    int64 chunk_total_number = 5[(api.body)="chunk_total_number"];
+}
+
+message VideoPublishStartResponse {
+    Status base = 1;
+    string uuid = 2;
+}
+
+message VideoPublishUploadingRequest {
+    string access_token = 1[(api.header)="Access-Token"];
+    string refresh_token = 2[(api.header)="Refresh-Token"];
+    string uuid = 3[(api.go_tag)='json:"uuid,required"'];
+    bytes data = 4[(api.go_tag)='json:"data"'];
+    string md5 = 5[(api.go_tag)='json:"md5,required"'];
+    bool is_m3u8 = 6[(api.go_tag)='json:"is_m3u8,required"'];
+    string filename = 7[(api.go_tag)='json:"filename,required"'];
+    int64 chunk_number =8[(api.go_tag)='json:"chunk_number,required"'];
+}
+
+message VideoPublishUploadingResponse {
+    Status base = 1;
+}
+
+message VideoPublishCompleteRequest {
+    string access_token = 1[(api.header)="Access-Token"];
+    string refresh_token = 2[(api.header)="Refresh-Token"];
+    string uuid = 3[(api.go_tag)='json:"uuid,required"'];
+}
+
+message VideoPublishCompleteResponse {
+    Status base = 1;
+}
+
+message VideoPublishCancleRequest {
+    string access_token = 1[(api.header)="Access-Token"];
+    string refresh_token = 2[(api.header)="Refresh-Token"];
+    string uuid = 3[(api.go_tag)='json:"uuid,required"'];
+}
+
+message VideoPublishCancleResponse {
+    Status base = 1;
+}
+
+message VideoListRequest {
+    string user_id = 1[(api.query)="user_id"];
+    int64 page_num = 2[(api.query)="page_num"];
+    int64 page_size = 3[(api.query)="page_size"];
+    string access_token = 4[(api.header)="Access-Token"];
+    string refresh_token = 5[(api.header)="Refresh-Token"];
+}
+
+message VideoListResponse {
+    Status base = 1;
+    message VideoListResponseData {
+        repeated Video items = 1;
+        int64 total = 2;
+    }
+    VideoListResponseData data = 2;
+}
+
+message VideoPopularRequest {
+    int64 page_num = 1[(api.query)="page_num"];
+    int64 page_size = 2[(api.query)="page_size"];
+    string access_token = 3[(api.header)="Access-Token"];
+    string refresh_token = 4[(api.header)="Refresh-Token"];
+}
+
+message VideoPopularResponse {
+    Status base = 1;
+    message VideoPopularResponseData {
+        repeated Video items = 1;
+    }
+    VideoPopularResponseData data = 2;
+}
+
+message VideoSearchRequest {
+    string access_token = 1[(api.header)="Access-Token"];
+    string refresh_token = 2[(api.header)="Refresh-Token"];
+    string keywords = 3[(api.go_tag)='json:"keywords,required"'];
+    int64 page_num = 4[(api.go_tag)='json:"page_num,required"'];
+    int64 page_size = 5[(api.go_tag)='json:"page_size,required"'];
+    int64 from_date = 6[(api.body)="from_date"];
+    int64 to_date = 7[(api.body)="to_date"];
+    string username = 8[(api.body)="username"];
+}
+
+message VideoSearchResponse {
+    Status base = 1;
+    message VideoSearchResponseData {
+        repeated Video items = 1;
+        int64 total = 2;
+    }
+    VideoSearchResponseData data = 2;
+}
+
+message VideoVisitRequest {
+}
+
+message VideoVisitResponse {
+    Status base = 1;
+    Video item = 2;
+}
+
+service VideoHandler {
+    rpc VideoFeed(VideoFeedRequest) returns(VideoFeedResponse) {
+        option (api.get) = "/video/feed/";
+    }
+
+    rpc VideoPublishStart(VideoPublishStartRequest) returns(VideoPublishStartResponse) {
+        option (api.post) = "/video/publish/start";
+    }
+
+    rpc VideoPublishUploading(VideoPublishUploadingRequest) returns(VideoPublishUploadingResponse) {
+        option (api.post) = "/video/publish/uploading";
+    }
+
+    rpc VideoPublishComplete(VideoPublishCompleteRequest) returns(VideoPublishCompleteResponse) {
+        option (api.post) = "/video/publish/complete";
+    }
+
+    rpc VideoPublishCancle(VideoPublishCancleRequest) returns(VideoPublishCancleResponse) {
+        option (api.post) = "/video/publish/cancle";
+    }
+
+    rpc VideoList(VideoListRequest) returns(VideoListResponse) {
+        option (api.get) = "/video/list/";
+    }
+
+    rpc VideoPopular(VideoPopularRequest) returns(VideoPopularResponse) {
+        option (api.get) = "/video/popular/";
+    }
+
+    rpc VideoSearch(VideoSearchRequest) returns(VideoSearchResponse) {
+        option (api.post) = "/video/search/";
+    }
+
+    rpc VideoVisit(VideoVisitRequest) returns(VideoVisitResponse) {
+        option (api.get) = "/video/visit/:id";
+    }
+}

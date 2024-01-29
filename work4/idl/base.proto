@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+option go_package = "base";
+
+import "api.proto";
+
+message Status {
+    int64 code = 1[(api.go_tag)='json:"code,required"'];
+    string msg = 2[(api.go_tag)='json:"msg,required"'];
+}
+
+message User {
+    string uid = 1;
+    string username = 2;
+    string avatar_url = 3;
+    string created_at = 4;
+    string updated_at = 5;
+    string deleted_at = 6[(api.go_tag)='json:"deleted_at,required"'];
+}
+
+message UserLite {
+    string uid = 1;
+    string username = 2;
+    string avatar_url = 3;
+}
+
+message Video {
+    string id = 1[(api.go_tag)='json:"id,required"'];
+    string user_id = 2[(api.go_tag)='json:"user_id,required"'];
+    string video_url = 3;
+    string cover_url = 4;
+    string title = 5;
+    string description = 6;
+    int64 visit_count = 7[(api.go_tag)='json:"visit_count,required"'];
+    int64 like_count = 8[(api.go_tag)='json:"like_count,required"'];
+    int64 comment_count = 9[(api.go_tag)='json:"comment_count,required"'];
+    string created_at = 10;
+    string updated_at = 11;
+    string deleted_at = 12[(api.go_tag)='json:"deleted_at,required"'];
+}
+
+message Comment {
+    string id = 1;
+    string user_id = 2;
+    string video_id = 3;
+    string parent_id = 4;
+    int64 like_count = 5[(api.go_tag)='json:"like_count,required"'];
+    int64 child_count = 6[(api.go_tag)='json:"child_count,required"'];
+    string content = 7;
+    string created_at = 8;
+    string updated_at = 9;
+    string deleted_at = 10[(api.go_tag)='json:"deleted_at,required"'];
+}
