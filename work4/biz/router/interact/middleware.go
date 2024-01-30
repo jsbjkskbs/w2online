@@ -3,6 +3,8 @@
 package interact
 
 import (
+	"work/biz/router/authfunc"
+
 	"github.com/cloudwego/hertz/pkg/app"
 )
 
@@ -23,7 +25,7 @@ func _deleteMw() []app.HandlerFunc {
 
 func _commentdeleteMw() []app.HandlerFunc {
 	// your code...
-	return nil
+	return authfunc.Auth()
 }
 
 func _listMw() []app.HandlerFunc {
@@ -33,7 +35,7 @@ func _listMw() []app.HandlerFunc {
 
 func _commentlistMw() []app.HandlerFunc {
 	// your code...
-	return nil
+	return authfunc.Auth()
 }
 
 func _publishMw() []app.HandlerFunc {
@@ -43,7 +45,7 @@ func _publishMw() []app.HandlerFunc {
 
 func _commentpublishMw() []app.HandlerFunc {
 	// your code...
-	return nil
+	return authfunc.Auth()
 }
 
 func _likeMw() []app.HandlerFunc {
@@ -58,7 +60,7 @@ func _actionMw() []app.HandlerFunc {
 
 func _likeactionMw() []app.HandlerFunc {
 	// your code...
-	return nil
+	return authfunc.Auth()
 }
 
 func _list0Mw() []app.HandlerFunc {
@@ -68,5 +70,5 @@ func _list0Mw() []app.HandlerFunc {
 
 func _likelistMw() []app.HandlerFunc {
 	// your code...
-	return nil
+	return authfunc.Auth()
 }

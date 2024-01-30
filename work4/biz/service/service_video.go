@@ -365,10 +365,10 @@ func (service VideoService) NewVisitEvent(request *video.VideoVisitRequest) (*ba
 }
 
 func (service VideoService) NewPopularEvent(request *video.VideoPopularRequest) (*video.VideoPopularResponse_VideoPopularResponseData, error) {
-	if request.PageNum == 0 {
+	if request.PageNum <= 0 {
 		request.PageNum = 1
 	}
-	if request.PageSize == 0 {
+	if request.PageSize <= 0 {
 		request.PageSize = constants.DefaultPageSize
 	}
 	list, err := redis.GetVideoPopularList(request.PageNum, request.PageSize)

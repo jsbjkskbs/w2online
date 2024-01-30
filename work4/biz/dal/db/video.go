@@ -57,3 +57,10 @@ func GetVideoVisitCount(vid string) (count string, err error) {
 	}
 	return count, err
 }
+
+func DeleteVideo(vid string) error {
+	if err := DB.Where(`id = ?`, vid).Delete(&Video{}).Error; err != nil {
+		return err
+	}
+	return nil
+}

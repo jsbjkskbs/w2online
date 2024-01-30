@@ -29,6 +29,7 @@ const (
 	FileMD5IsNotMatchErrCode
 
 	NoSuchVideoErrCode
+	NoSuchCommentErrCode
 
 	OssUploadErrCode
 	OssDeleteErrCode
@@ -64,7 +65,8 @@ const (
 	FileIsTooLargeErrMsg        = "File is too large"
 	FileMD5IsNotMatchErrMsg     = "Files' MD5 is not matched"
 
-	NoSuchVideoErrMsg = "The video doesn't exist"
+	NoSuchVideoErrMsg   = "The video doesn't exist"
+	NoSuchCommentErrMsg = "The comment doesn't exist"
 
 	OssUploadErrMsg = "Oss upload failed"
 	OssDeleteErrMsg = "Oss delete failed"
@@ -123,7 +125,8 @@ var (
 	FileIsTooLargeError        = NewErrorMessage(FileIsTooLargeErrCode, FileIsTooLargeErrMsg)
 	FileMD5IsNotMatchError     = NewErrorMessage(FileMD5IsNotMatchErrCode, FileMD5IsNotMatchErrMsg)
 
-	NoSuchVideoError = NewErrorMessage(NoSuchVideoErrCode, NoSuchVideoErrMsg)
+	NoSuchVideoError   = NewErrorMessage(NoSuchVideoErrCode, NoSuchVideoErrMsg)
+	NoSuchCommentError = NewErrorMessage(NoSuchCommentErrCode, NoSuchCommentErrMsg)
 
 	OssUploadError = NewErrorMessage(OssUploadErrCode, OssUploadErrMsg)
 	OssDeleteError = NewErrorMessage(OssDeleteErrCode, OssDeleteErrMsg)

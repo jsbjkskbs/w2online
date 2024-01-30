@@ -21,10 +21,10 @@ func main() {
 	qiniuyunoss.OssInit()
 	dustman.NewRedisDustman().Run()
 	dustman.NewFileDustman().Run()
-	syncman.NewSyncman().Run()
-	h := server.Default()
+	syncman.NewVideoSyncman().Run()
+	syncman.NewCommentSyncman().Run()
+	h := server.Default(server.WithHostPorts(`:10001`))
 	register(h)
 
-	syncman.SyncMwWhenInit()
 	h.Spin()
 }

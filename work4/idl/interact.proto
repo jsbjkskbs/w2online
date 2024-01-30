@@ -21,8 +21,8 @@ message LikeActionResponse {
 
 message LikeListRequest {
     string user_id = 1[(api.query)="user_id"];
-    string page_size = 2[(api.query)="page_size"];
-    string page_num = 3[(api.query)="page_num"];
+    int64 page_size = 2[(api.query)="page_size"];
+    int64 page_num = 3[(api.query)="page_num"];
     string access_token = 4[(api.header)="Access-Token"];
     string refresh_token = 5[(api.header)="Refresh-Token"];
 }

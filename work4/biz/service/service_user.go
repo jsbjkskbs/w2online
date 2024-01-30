@@ -44,7 +44,7 @@ func (service UserService) UserServiceRegister(request *user.UserRegisterRequest
 		AvatarUrl: constants.DefaultAvatarUrl,
 		CreatedAt: time.Now().Unix(),
 		DeletedAt: 0,
-		UpdatedAt: 0,
+		UpdatedAt: time.Now().Unix(),
 	})
 	if err != nil {
 		return ``, err

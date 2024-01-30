@@ -5,9 +5,14 @@ package interact
 import (
 	"context"
 
+	"work/biz/model/base"
+	interact "work/biz/model/base/interact"
+	"work/biz/service"
+	"work/pkg/errmsg"
+	"work/pkg/utils"
+
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	interact "work/biz/model/base/interact"
 )
 
 // LikeAction .
@@ -21,9 +26,24 @@ func LikeAction(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(interact.LikeActionResponse)
+	err = service.NewInteractService(ctx, c).NewLikeActionEvent(&req)
+	if err != nil {
+		resp := utils.CreateBaseHttpResponse(err)
+		c.JSON(consts.StatusOK, interact.LikeActionResponse{
+			Base: &base.Status{
+				Code: resp.StatusCode,
+				Msg:  resp.StatusMsg,
+			},
+		})
+		return
+	}
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(consts.StatusOK, interact.LikeActionResponse{
+		Base: &base.Status{
+			Code: errmsg.NoError.ErrorCode,
+			Msg:  errmsg.NoError.ErrorMsg,
+		},
+	})
 }
 
 // LikeList .
@@ -37,9 +57,25 @@ func LikeList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(interact.LikeListResponse)
+	data, err := service.NewInteractService(ctx, c).NewLikeListEvent(&req)
+	if err != nil {
+		resp := utils.CreateBaseHttpResponse(err)
+		c.JSON(consts.StatusOK, interact.CommentListResponse{
+			Base: &base.Status{
+				Code: resp.StatusCode,
+				Msg:  resp.StatusMsg,
+			},
+		})
+		return
+	}
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(consts.StatusOK, interact.LikeListResponse{
+		Base: &base.Status{
+			Code: errmsg.NoError.ErrorCode,
+			Msg:  errmsg.NoError.ErrorMsg,
+		},
+		Data: data,
+	})
 }
 
 // CommentPublish .
@@ -53,9 +89,24 @@ func CommentPublish(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(interact.CommentPublishResponse)
+	err = service.NewInteractService(ctx, c).NewCommentPublishEvent(&req)
+	if err != nil {
+		resp := utils.CreateBaseHttpResponse(err)
+		c.JSON(consts.StatusOK, interact.CommentPublishResponse{
+			Base: &base.Status{
+				Code: resp.StatusCode,
+				Msg:  resp.StatusMsg,
+			},
+		})
+		return
+	}
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(consts.StatusOK, interact.CommentPublishResponse{
+		Base: &base.Status{
+			Code: errmsg.NoError.ErrorCode,
+			Msg:  errmsg.NoError.ErrorMsg,
+		},
+	})
 }
 
 // CommentList .
@@ -69,9 +120,25 @@ func CommentList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(interact.CommentListResponse)
+	data, err := service.NewInteractService(ctx, c).NewCommentListEvent(&req)
+	if err != nil {
+		resp := utils.CreateBaseHttpResponse(err)
+		c.JSON(consts.StatusOK, interact.CommentListResponse{
+			Base: &base.Status{
+				Code: resp.StatusCode,
+				Msg:  resp.StatusMsg,
+			},
+		})
+		return
+	}
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(consts.StatusOK, interact.CommentListResponse{
+		Base: &base.Status{
+			Code: errmsg.NoError.ErrorCode,
+			Msg:  errmsg.NoError.ErrorMsg,
+		},
+		Data: data,
+	})
 }
 
 // CommentDelete .
@@ -85,7 +152,22 @@ func CommentDelete(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(interact.CommentDeleteResponse)
+	err = service.NewInteractService(ctx, c).NewDeleteEvent(&req)
+	if err != nil {
+		resp := utils.CreateBaseHttpResponse(err)
+		c.JSON(consts.StatusOK, interact.CommentDeleteResponse{
+			Base: &base.Status{
+				Code: resp.StatusCode,
+				Msg:  resp.StatusMsg,
+			},
+		})
+		return
+	}
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(consts.StatusOK, interact.CommentDeleteResponse{
+		Base: &base.Status{
+			Code: errmsg.NoError.ErrorCode,
+			Msg:  errmsg.NoError.ErrorMsg,
+		},
+	})
 }

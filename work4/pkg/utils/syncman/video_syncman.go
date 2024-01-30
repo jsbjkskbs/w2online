@@ -12,27 +12,29 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 )
 
-type Syncman struct {
+type VideoSyncman struct {
 	ctx    context.Context
 	cancle context.CancelFunc
 }
 
-func NewSyncman() *Syncman {
+func NewVideoSyncman() *VideoSyncman {
 	ctx, cancle := context.WithCancel(context.Background())
-	return &Syncman{
+	return &VideoSyncman{
 		ctx:    ctx,
 		cancle: cancle,
 	}
 }
 
-func (sm Syncman) Run() {
-	SyncMwWhenInit()
+func (sm VideoSyncman) Run() {
+	if err := videoSyncMwWhenInit(); err != nil {
+		panic(err)
+	}
 	go func() {
 		for {
 			time.Sleep(time.Minute * 10)
 			select {
 			case <-sm.ctx.Done():
-				hlog.Info("Ok,stop sync")
+				hlog.Info("Ok,stop sync[video]")
 				return
 			default:
 			}
@@ -40,7 +42,7 @@ func (sm Syncman) Run() {
 				wg                       sync.WaitGroup
 				errChan                  = make(chan error, 3)
 				visitCount, commentCount int64
-				likeList                 *[]string
+				likeList                 *map[string]string
 				vidList                  *[]string
 			)
 			var err error
@@ -76,44 +78,42 @@ func (sm Syncman) Run() {
 					hlog.Error(result)
 				default:
 				}
-				wg.Add(2)
-				errChan = make(chan error, 2)
-				go func() {
-					if err := db.CreateIfNotExistsVideoLike(vid, likeList); err != nil {
-						errChan <- err
+				likeCount := 0
+				for uid, value := range *likeList {
+					if value == `1` {
+						likeCount++
+						err := db.CreateIfNotExistsVideoLike(vid, uid)
+						if err != nil {
+							hlog.Error(err)
+						}
+					} else {
+						err := db.DeleteVideoLike(vid, uid)
+						if err != nil {
+							hlog.Error(err)
+						}
 					}
-					wg.Done()
-				}()
-				go func() {
-					err := elasticsearch.UpdateVideoLikeVisitAndCommentCount(vid, fmt.Sprint(len(*likeList)), fmt.Sprint(visitCount), fmt.Sprint(commentCount))
-					if err != nil {
-						errChan <- err
-					}
-					wg.Done()
-				}()
-				wg.Wait()
-				select {
-				case result := <-errChan:
-					hlog.Error(result)
-				default:
+				}
+				err := elasticsearch.UpdateVideoLikeVisitAndCommentCount(vid, fmt.Sprint(likeCount), fmt.Sprint(visitCount), fmt.Sprint(commentCount))
+				if err != nil {
+					hlog.Error(err)
 				}
 			}
 		}
 	}()
 }
 
-func (sm Syncman) Stop() {
+func (sm VideoSyncman) Stop() {
 	sm.cancle()
 }
 
-type syncData struct {
-	vid          string
-	likeList     *[]string
-	visitCount   string
-	commentCount string
+type videoSyncData struct {
+	vid         string
+	likeList    *[]string
+	visitCount  string
+	commentList *[]string
 }
 
-func SyncMwWhenInit() error {
+func videoSyncMwWhenInit() error {
 	list, err := db.GetVideoIdList()
 	if err != nil {
 		panic(err)
@@ -122,26 +122,26 @@ func SyncMwWhenInit() error {
 	var (
 		wg       sync.WaitGroup
 		errChan  = make(chan error, 3)
-		syncList = make([]syncData, 0)
-		data     syncData
+		syncList = make([]videoSyncData, 0)
+		data     videoSyncData
 	)
 	for _, vid := range *list {
 		data.vid = vid
 		wg.Add(3)
-		go func(data *syncData) {
+		go func(data *videoSyncData) {
 			if data.likeList, err = db.GetVideoLikeList(vid); err != nil {
 				errChan <- err
 			}
 			wg.Done()
 		}(&data)
-		go func(data *syncData) {
+		go func(data *videoSyncData) {
 			if data.visitCount, err = db.GetVideoVisitCount(vid); err != nil {
 				errChan <- err
 			}
 			wg.Done()
 		}(&data)
-		go func(data *syncData) {
-			if data.commentCount, err = db.GetVideoCommentCount(vid); err != nil {
+		go func(data *videoSyncData) {
+			if data.commentList, err = db.GetVideoCommentList(vid); err != nil {
 				errChan <- err
 			}
 			wg.Done()
@@ -157,14 +157,14 @@ func SyncMwWhenInit() error {
 
 	errChan = make(chan error, 2)
 	wg.Add(2)
-	go func(syncList *[]syncData) {
-		if err := syncDB2Redis(syncList); err != nil {
+	go func(syncList *[]videoSyncData) {
+		if err := videoSyncDB2Redis(syncList); err != nil {
 			errChan <- err
 		}
 		wg.Done()
 	}(&syncList)
-	go func(syncList *[]syncData) {
-		if err := syncDB2Elastic(syncList); err != nil {
+	go func(syncList *[]videoSyncData) {
+		if err := vidoeSyncDB2Elastic(syncList); err != nil {
 			errChan <- err
 		}
 		wg.Done()
@@ -178,7 +178,7 @@ func SyncMwWhenInit() error {
 	return nil
 }
 
-func syncDB2Redis(syncList *[]syncData) error {
+func videoSyncDB2Redis(syncList *[]videoSyncData) error {
 	var (
 		wg      sync.WaitGroup
 		errChan = make(chan error, 3)
@@ -192,17 +192,17 @@ func syncDB2Redis(syncList *[]syncData) error {
 			wg.Done()
 		}(item.vid, item.visitCount)
 		go func(vid string, likeList *[]string) {
-			if err := redis.PutVideoLikeInfo(vid, *likeList); err != nil {
+			if err := redis.PutVideoLikeInfo(vid, likeList); err != nil {
 				errChan <- err
 			}
 			wg.Done()
 		}(item.vid, item.likeList)
-		go func(vid, commentCount string) {
-			if err := redis.PutVideoCommentInfo(vid, commentCount); err != nil {
+		go func(vid string, commentList *[]string) {
+			if err := redis.PutVideoCommentInfo(vid, commentList); err != nil {
 				errChan <- err
 			}
 			wg.Done()
-		}(item.vid, item.commentCount)
+		}(item.vid, item.commentList)
 		wg.Wait()
 		select {
 		case result := <-errChan:
@@ -213,9 +213,9 @@ func syncDB2Redis(syncList *[]syncData) error {
 	return nil
 }
 
-func syncDB2Elastic(syncList *[]syncData) error {
+func vidoeSyncDB2Elastic(syncList *[]videoSyncData) error {
 	for _, item := range *syncList {
-		if err := elasticsearch.UpdateVideoLikeVisitAndCommentCount(item.vid, fmt.Sprint(len(*item.likeList)), item.visitCount, item.commentCount); err != nil {
+		if err := elasticsearch.UpdateVideoLikeVisitAndCommentCount(item.vid, fmt.Sprint(len(*item.likeList)), item.visitCount, fmt.Sprint(len(*item.commentList))); err != nil {
 			return err
 		}
 	}
