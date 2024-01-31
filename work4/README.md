@@ -30,10 +30,10 @@
 |/like/list|无|
 |/comment/list|无|
 |/comment/delete|无|
-|relation/action|无|
-|follower/list|无|
-|following/list|无|
-|friend/list|无|
+|/relation/action|无|
+|/follower/list|无|
+|/following/list|无|
+|/friend/list|无|
 
 ### 数据同步逻辑
 
