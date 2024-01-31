@@ -6,6 +6,7 @@ import (
 	"work/biz/dal"
 	"work/biz/mw/elasticsearch"
 	"work/biz/mw/jwt"
+	webs "work/biz/router/websocket"
 	qiniuyunoss "work/pkg/qiniuyun_oss"
 	"work/pkg/utils/dustman"
 	"work/pkg/utils/syncman"
@@ -25,7 +26,11 @@ func main() {
 	syncman.NewCommentSyncman().Run()
 	syncman.NewRelationSyncman().Run()
 	h := server.Default(server.WithHostPorts(`:10001`))
+	ws := server.Default(server.WithHostPorts(`:10000`))
+	ws.NoHijackConnPool = true
 	register(h)
+	webs.WebsocketRegister(ws)
 
+	go ws.Spin()
 	h.Spin()
 }

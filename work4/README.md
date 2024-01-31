@@ -7,6 +7,7 @@
 #### 请下载并提取到./pkg/configs/es/plugins内
 #### 或在docker-compose.yaml中为elastic节点添加指令
     ./bin/plugin-install <plugin name or url>
+#### 由于docker-compose.yml对所有容器应用桥接模式,共用一个虚拟网络,故go的连接地址应当是带有容器名并为容器内端口的一段地址,如`redis:6379`(`container-name = redis`   `port = 16379:6379`)
 
 ### 接口实现
 
@@ -34,6 +35,7 @@
 |/follower/list|无|
 |/following/list|无|
 |/friend/list|无|
+|ws://127.0.0.1:10000|未明确需求,故用户连接后接受全部(不管是否为to_user_id)的离线消息
 
 ### 数据同步逻辑
 
@@ -66,3 +68,6 @@
 - 完成社交模块(至此完成全部寒假要求的接口,仅剩余部分额外要求的接口)
 - 修改了docker-compose中的连接逻辑(work由host模式变为bridge模式,全部容器由一个共同net连接)
 - 由于社交中关注与粉丝关系在Redis内的数据结构为Set,无法正常完成分页功能,故访问数据库以获取列表。而好友关系由Redis中Set的交集获取，可能会产生无序的问题。
+
+#### 2024.2.1 (4th upload)
+- 完成WebSocket聊天
