@@ -30,7 +30,7 @@ message LikeListRequest {
 message LikeListResponse {
     Status base = 1;
     message LikeListResponseData {
-        repeated Video items = 1;
+        repeated Video items = 1[(api.go_tag)='json:"items,required"'];;
     }
     LikeListResponseData data = 2;
 }
@@ -59,7 +59,7 @@ message CommentListRequest {
 message CommentListResponse {
     Status base = 1;
     message CommentListResponseData {
-        repeated Comment items = 1;
+        repeated Comment items = 1[(api.go_tag)='json:"items,required"'];;
     }
     CommentListResponseData data = 2;
 }

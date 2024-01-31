@@ -10,8 +10,8 @@ option go_package = "base/relation";
 message RelationActionRequest {
     string access_token = 1[(api.header)="Access-Token"];
     string refresh_token = 2[(api.header)="Refresh-Token"];
-    string to_user_id = 3[(api.query)="to_user_id"];
-    int64 action_type = 4[(api.query)="action_type"];
+    string to_user_id = 3[(api.go_tag)='json:"to_user_id,required"'];
+    int64 action_type = 4[(api.go_tag)='json:"action_type,required"'];
 }
 
 message RelationActionResponse {
@@ -29,8 +29,8 @@ message FollowingListRequest {
 message FollowingListResponse {
     Status base = 1;
     message FollowingListResponseData {
-        repeated UserLite items = 1;
-        int64 total = 2;
+        repeated UserLite items = 1[(api.go_tag)='json:"items,required"'];;
+        int64 total = 2[(api.go_tag)='json:"total,required"'];;
     }
     FollowingListResponseData data = 2;
 }
@@ -46,14 +46,13 @@ message FollowerListRequest {
 message FollowerListResponse {
     Status base = 1;
     message FollowerListResponseData {
-        repeated UserLite items = 1;
-        int64 total = 2;
+        repeated UserLite items = 1[(api.go_tag)='json:"items,required"'];
+        int64 total = 2[(api.go_tag)='json:"total,required"'];
     }
     FollowerListResponseData data = 2;
 }
 
 message FriendListRequest {
-    string user_id = 1[(api.query)="user_id"];
     int64 page_num = 2[(api.query)="page_num"];
     int64 page_size = 3[(api.query)="page_size"];
     string access_token = 4[(api.header)="Access-Token"];
@@ -63,8 +62,8 @@ message FriendListRequest {
 message FriendListResponse {
     Status base = 1;
     message FriendListResponseData {
-        repeated UserLite items = 1;
-        int64 total = 2;
+        repeated UserLite items = 1[(api.go_tag)='json:"items,required"'];;
+        int64 total = 2[(api.go_tag)='json:"total,required"'];
     }
     FriendListResponseData data = 2;
 }

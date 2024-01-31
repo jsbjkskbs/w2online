@@ -7,7 +7,7 @@ import (
 )
 
 type User struct {
-	Uid       int64 `json:"uid"`
+	Uid       int64  `json:"uid"`
 	Username  string `json:"username"`
 	Password  string `json:"password"`
 	AvatarUrl string `json:"avatar_url"`
@@ -109,4 +109,12 @@ func UpdateAvatarUrl(uid, avatarUrl string) (*User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+
+func GetUserIdList() (*[]string, error) {
+	list := make([]string, 0)
+	if err := DB.Table(`users`).Select("uid").Scan(&list).Error; err != nil {
+		return nil, err
+	}
+	return &list, nil
 }

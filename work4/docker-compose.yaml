@@ -15,6 +15,8 @@ services:
       - MYSQL_USER=${MYSQL_USERNAME}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+    networks:
+      - docker_net
 
   redis:
     image: redis:7
@@ -25,6 +27,8 @@ services:
       - ./pkg/configs/redis/redis.conf:/usr/local/etc/redis/redis.conf
       - ./pkg/data/redis/:/data
     command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - docker_net
 
   es01:
     image: elasticsearch:7.17.16
@@ -48,6 +52,7 @@ services:
       - ./pkg/configs/es/plugins:/usr/share/elasticsearch/plugins
     networks:
       - elastic
+      - docker_net
 
   es02:
     image: elasticsearch:7.17.16
@@ -103,21 +108,26 @@ services:
       - ./pkg/configs/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
     networks:
       - elastic
+      - docker_net
 
   work:
     image: work:latest
     container_name: work_main
-    ports:
-      - "10000:10000"
-      - "10001:10001"
-      - "12345:8888"
     depends_on:
       - mysql
       - redis
       - es01
     profiles: 
     - release
+    ports:
+      - 10001:10001
+      - 10000:10000
+    networks:
+      - docker_net
+    
 
 networks:
   elastic:
+    driver: bridge
+  docker_net:
     driver: bridge

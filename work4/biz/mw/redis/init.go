@@ -12,6 +12,7 @@ var (
 	redisDBVideoUpload  *redis.Client
 	redisDBVideoInfo    *redis.Client
 	redisDBCommentInfo  *redis.Client
+	redisDBRelationInfo   *redis.Client
 )
 
 func Init() {
@@ -40,6 +41,12 @@ func Init() {
 		DB:       3,
 	})
 
+	redisDBRelationInfo = redis.NewClient(&redis.Options{
+		Addr:     constants.RedisAddr,
+		Password: constants.RedisPassword,
+		DB:       4,
+	})
+
 	if _, err := redisDBAvatarUpload.Ping().Result(); err != nil {
 		panic(err)
 	}
@@ -50,6 +57,9 @@ func Init() {
 		panic(err)
 	}
 	if _, err := redisDBCommentInfo.Ping().Result(); err != nil {
+		panic(err)
+	}
+	if _, err := redisDBRelationInfo.Ping().Result(); err != nil {
 		panic(err)
 	}
 	hlog.Info("Redis connected successfully.")

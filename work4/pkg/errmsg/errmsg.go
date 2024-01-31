@@ -15,6 +15,7 @@ const (
 
 	UsernameAlreadyExistErrCode
 	UsernameDoesNotExistErrCode
+	UserDoesNotExistErrCode
 	UsernameAndUidAreNotMatched
 
 	TokenIsInavailableErrCode
@@ -45,13 +46,14 @@ const (
 const (
 	NoErrorMsg = "OK"
 
-	ServiceErrMsg             = "Service started not successfully"
+	ServiceErrMsg             = "Service failed"
 	ParamErrMsg               = "Wrong param provided"
 	AuthenticatorFailedErrMsg = "Username and password are not matched"
 	RequestAlreadyExistErrMsg = "Request already exist.Perhaps send request too frequently"
 
 	UsernameAlreadyExistErrMsg        = "This name already exists"
 	UsernameDoesNotExistErrMsg        = "This name does not exist"
+	UserDoesNotExistErrMsg            = "This user does not exist"
 	UsernameAndUidAreNotMatchedErrMsg = "The username and uid are not matched"
 
 	TokenIsInavailableErrMsg = "Token is inavailable"
@@ -112,6 +114,7 @@ var (
 
 	UsernameAlreadyExistError        = NewErrorMessage(UsernameAlreadyExistErrCode, UsernameAlreadyExistErrMsg)
 	UsernameDoesNotExistError        = NewErrorMessage(UsernameDoesNotExistErrCode, UsernameDoesNotExistErrMsg)
+	UserDoesNotExistError            = NewErrorMessage(UserDoesNotExistErrCode, UserDoesNotExistErrMsg)
 	UsernameAndUidAreNotMatchedError = NewErrorMessage(UsernameAndUidAreNotMatched, UsernameAndUidAreNotMatchedErrMsg)
 
 	TokenIsInavailableError = NewErrorMessage(TokenIsInavailableErrCode, TokenIsInavailableErrMsg)

@@ -1,4 +1,6 @@
-## Uncomplete
+## West2-Online(Golang 下半年综合考核)
+
+### 备注
 
 #### ElasticSearch(7.17.16)采用的插件有：
 1. elasticsearch-analysis-ik-7.17.16
@@ -6,7 +8,7 @@
 #### 或在docker-compose.yaml中为elastic节点添加指令
     ./bin/plugin-install <plugin name or url>
 
-## 接口实现
+### 接口实现
 
 |已实现接口|备注|
 |-|-|
@@ -28,30 +30,39 @@
 |/like/list|无|
 |/comment/list|无|
 |/comment/delete|无|
+|relation/action|无|
+|follower/list|无|
+|following/list|无|
+|friend/list|无|
 
-## 数据同步逻辑
+### 数据同步逻辑
 
-### 初始化
+#### 初始化
 - MySQL会将所有数据同步到Redis,elasticsearch上
 
-### 运行时
-- 评论、视频一类非高频数据会直接保存到MySQL,同时在Redis(评论、视频)或elasticsearch(视频)保存(该类数据一定有ID)
+#### 运行时
+- 评论、视频、关注一类非高频数据会直接保存到MySQL,同时在Redis(评论、视频)或elasticsearch(视频)保存(该类数据一定有ID)
 - 点赞、浏览量一类高频数据不会直接保存到MySQL,刚开始只在Redis保存(该类数据不可能有ID)
 - Redis会定期将点赞、浏览等数据同步到MySQL和elastisearch内
 
-### 其他(如运行时出错)
+#### 其他(如运行时出错)
 - 暂无
 
-## 数据删除逻辑
+### 数据删除逻辑
 - 以一天为有效日期,会对未完成的上传请求进行删除操作(删除暂存文件夹,删除Redis上传记录)
 
-## 更新日志
+### 更新日志
 
-### 2024.1.29 (1st upload)
+#### 2024.1.29 (1st upload)
 - 采用hertz框架
 - 完成用户模块
 - 完成视频模块(其中视频上传为分片上传，被拆分为四个接口)
 - 引入Mysql+Redis+ElasticSearch+OSS(qiniuyun)
 
-### 2024.1.30 (2nd upload)
+#### 2024.1.30 (2nd upload)
 - 完成互动模块
+
+#### 2024.1.31 (3rd upload)
+- 完成社交模块(至此完成全部寒假要求的接口,仅剩余部分额外要求的接口)
+- 修改了docker-compose中的连接逻辑(work由host模式变为bridge模式,全部容器由一个共同net连接)
+- 由于社交中关注与粉丝关系在Redis内的数据结构为Set,无法正常完成分页功能,故访问数据库以获取列表。而好友关系由Redis中Set的交集获取，可能会产生无序的问题。

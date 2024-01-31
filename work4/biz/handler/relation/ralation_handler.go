@@ -5,9 +5,14 @@ package relation
 import (
 	"context"
 
+	"work/biz/model/base"
+	relation "work/biz/model/base/relation"
+	"work/biz/service"
+	"work/pkg/errmsg"
+	"work/pkg/utils"
+
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	relation "work/biz/model/base/relation"
 )
 
 // RelationAction .
@@ -21,9 +26,24 @@ func RelationAction(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(relation.RelationActionResponse)
+	err = service.NewRelationService(ctx, c).NewRelationActionEvent(&req)
+	if err != nil {
+		resp := utils.CreateBaseHttpResponse(err)
+		c.JSON(consts.StatusOK, relation.RelationActionResponse{
+			Base: &base.Status{
+				Code: resp.StatusCode,
+				Msg:  resp.StatusMsg,
+			},
+		})
+		return
+	}
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(consts.StatusOK, relation.RelationActionResponse{
+		Base: &base.Status{
+			Code: errmsg.NoError.ErrorCode,
+			Msg:  errmsg.NoError.ErrorMsg,
+		},
+	})
 }
 
 // FollowingList .
@@ -37,9 +57,25 @@ func FollowingList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(relation.FollowingListResponse)
+	data, err := service.NewRelationService(ctx, c).NewFollowingListEvent(&req)
+	if err != nil {
+		resp := utils.CreateBaseHttpResponse(err)
+		c.JSON(consts.StatusOK, relation.FollowingListResponse{
+			Base: &base.Status{
+				Code: resp.StatusCode,
+				Msg:  resp.StatusMsg,
+			},
+		})
+		return
+	}
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(consts.StatusOK, relation.FollowingListResponse{
+		Base: &base.Status{
+			Code: errmsg.NoError.ErrorCode,
+			Msg:  errmsg.NoError.ErrorMsg,
+		},
+		Data: data,
+	})
 }
 
 // FollowerList .
@@ -53,9 +89,25 @@ func FollowerList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(relation.FollowerListResponse)
+	data, err := service.NewRelationService(ctx, c).NewFollowerEvent(&req)
+	if err != nil {
+		resp := utils.CreateBaseHttpResponse(err)
+		c.JSON(consts.StatusOK, relation.FollowerListResponse{
+			Base: &base.Status{
+				Code: resp.StatusCode,
+				Msg:  resp.StatusMsg,
+			},
+		})
+		return
+	}
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(consts.StatusOK, relation.FollowerListResponse{
+		Base: &base.Status{
+			Code: errmsg.NoError.ErrorCode,
+			Msg:  errmsg.NoError.ErrorMsg,
+		},
+		Data: data,
+	})
 }
 
 // FriendList .
@@ -69,7 +121,23 @@ func FriendList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(relation.FriendListResponse)
+	data, err := service.NewRelationService(ctx, c).NewFriendListEvent(&req)
+	if err != nil {
+		resp := utils.CreateBaseHttpResponse(err)
+		c.JSON(consts.StatusOK, relation.FriendListResponse{
+			Base: &base.Status{
+				Code: resp.StatusCode,
+				Msg:  resp.StatusMsg,
+			},
+		})
+		return
+	}
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(consts.StatusOK, relation.FriendListResponse{
+		Base: &base.Status{
+			Code: errmsg.NoError.ErrorCode,
+			Msg:  errmsg.NoError.ErrorMsg,
+		},
+		Data: data,
+	})
 }
