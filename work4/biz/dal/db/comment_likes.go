@@ -2,7 +2,6 @@ package db
 
 import (
 	"time"
-	"work/pkg/errmsg"
 
 	"gorm.io/gorm/clause"
 )
@@ -25,14 +24,14 @@ func GetCommentLikeList(cid string) (*[]string, error) {
 
 func CreateCommentLike(commentLike *CommentLike) error {
 	if err := DB.Create(commentLike).Error; err != nil {
-		return errmsg.ServiceError
+		return err
 	}
 	return nil
 }
 
 func DeleteCommentLike(cid, uid string) error {
 	if err := DB.Where(`comment_id = ? and user_id = ?`, cid, uid).Delete(&CommentLike{}).Error; err != nil {
-		return errmsg.ServiceError
+		return err
 	}
 	return nil
 }

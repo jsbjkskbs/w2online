@@ -2,7 +2,6 @@ package db
 
 import (
 	"fmt"
-	"work/pkg/errmsg"
 )
 
 type Video struct {
@@ -28,17 +27,17 @@ func CreateVideo(video *Video) (string, error) {
 
 func UpdateVideoUrl(videoUrl, coverUrl, vid string) error {
 	if err := DB.Where("id = ?", vid).Model(&Video{}).Update("video_url", videoUrl).Error; err != nil {
-		return errmsg.ServiceError
+		return err
 	}
 	if err := DB.Where("id = ?", vid).Model(&Video{}).Update("cover_url", coverUrl).Error; err != nil {
-		return errmsg.ServiceError
+		return err
 	}
 	return nil
 }
 
 func UpdateVideoVisit(vid, visitCount string) error {
-	if err := DB.Where("id = ?", vid).Model(&Video{}).Update("visit_count", visitCount); err != nil {
-		return errmsg.ServiceError
+	if err := DB.Where("id = ?", vid).Model(&Video{}).Update("visit_count", visitCount).Error; err != nil {
+		return err
 	}
 	return nil
 }

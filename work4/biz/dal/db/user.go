@@ -14,9 +14,9 @@ type User struct {
 	CreatedAt int64  `json:"created_at"`
 	UpdatedAt int64  `json:"updated_at"`
 	DeletedAt int64  `json:"deleted_at"`
+	MfaEnable bool   `json:"mfa_enable"`
+	MfaSecret string `json:"mfa_secret"`
 }
-
-var UserModel User
 
 // 创建用户信息并返回uid
 func CreateUser(user *User) (string, error) {
@@ -93,14 +93,14 @@ func UpdateAvatarUrl(uid, avatarUrl string) (*User, error) {
 		return nil, err
 	}
 	if !exist {
-		return nil, errmsg.ServiceError
-	}
-
-	if err = DB.Where("uid = ?", uid).Model(&UserModel).Update("avatar_url", avatarUrl).Error; err != nil {
 		return nil, err
 	}
 
-	if err = DB.Where("uid = ?", uid).Model(&UserModel).Update("updated_at", time.Now().Unix()).Error; err != nil {
+	if err = DB.Where("uid = ?", uid).Model(&User{}).Update("avatar_url", avatarUrl).Error; err != nil {
+		return nil, err
+	}
+
+	if err = DB.Where("uid = ?", uid).Model(&User{}).Update("updated_at", time.Now().Unix()).Error; err != nil {
 		return nil, err
 	}
 
@@ -117,4 +117,20 @@ func GetUserIdList() (*[]string, error) {
 		return nil, err
 	}
 	return &list, nil
+}
+
+func GetMfaSecret(uid string) (string, error) {
+	code := make([]string, 0)
+	if err := DB.Table(`users`).Where(`uid = ?`, uid).Select(`mfa_secret`).Scan(&code).Error; err != nil {
+		return ``, err
+	}
+	return code[0], nil
+}
+
+func UpdateMfaSecret(uid, secret string) error {
+	err := DB.Table(`users`).Where(`uid = ?`, uid).Model(&User{}).Updates(map[string]interface{}{`mfa_enable`: true, `mfa_secret`: secret}).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }

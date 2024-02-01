@@ -34,7 +34,7 @@ func UserRegister(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	_, err = service.NewUserService(ctx, c).UserServiceRegister(&req)
+	_, err = service.NewUserService(ctx, c).NewRegisterEvent(&req)
 	if err != nil {
 		resp := utils.CreateBaseHttpResponse(err)
 		c.JSON(consts.StatusOK, user.UserRegisterResponse{
@@ -70,7 +70,7 @@ func UserLogin(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	data, err := service.NewUserService(ctx, c).UserServiceLogin(&req)
+	data, err := service.NewUserService(ctx, c).NewLoginEvent(&req)
 	if err != nil {
 		resp := utils.CreateBaseHttpResponse(err)
 		c.JSON(consts.StatusOK, user.UserLoginResponse{
@@ -114,7 +114,7 @@ func UserInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	data, err := service.NewUserService(ctx, c).UserServiceInfo(&req)
+	data, err := service.NewUserService(ctx, c).NewInfoEvent(&req)
 
 	if err != nil {
 		resp := utils.CreateBaseHttpResponse(err)
@@ -154,7 +154,7 @@ func UserAvatarUpload(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	data, err := service.NewUserService(ctx, c).UserServiceAvatarUpload(&req)
+	data, err := service.NewUserService(ctx, c).NewAvatarUploadEvent(&req)
 
 	if err != nil {
 		resp := utils.CreateBaseHttpResponse(err)
@@ -194,9 +194,25 @@ func AuthMfaQrcode(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(user.AuthMfaQrcodeResponse)
+	data, err := service.NewUserService(ctx, c).NewQrcodeEvent(&req)
+	if err != nil {
+		resp := utils.CreateBaseHttpResponse(err)
+		c.JSON(consts.StatusOK, user.AuthMfaQrcodeResponse{
+			Base: &base.Status{
+				Code: resp.StatusCode,
+				Msg:  resp.StatusMsg,
+			},
+		})
+		return
+	}
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(consts.StatusOK, user.AuthMfaQrcodeResponse{
+		Base: &base.Status{
+			Code: errmsg.NoError.ErrorCode,
+			Msg:  errmsg.NoError.ErrorMsg,
+		},
+		Data: data,
+	})
 }
 
 // AuthMfaBind .
@@ -210,7 +226,22 @@ func AuthMfaBind(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(user.AuthMfaBindResponse)
+	err = service.NewUserService(ctx, c).NewMfaBindEvent(&req)
+	if err != nil {
+		resp := utils.CreateBaseHttpResponse(err)
+		c.JSON(consts.StatusOK, user.AuthMfaBindResponse{
+			Base: &base.Status{
+				Code: resp.StatusCode,
+				Msg:  resp.StatusMsg,
+			},
+		})
+		return
+	}
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(consts.StatusOK, user.AuthMfaBindResponse{
+		Base: &base.Status{
+			Code: errmsg.NoError.ErrorCode,
+			Msg:  errmsg.NoError.ErrorMsg,
+		},
+	})
 }

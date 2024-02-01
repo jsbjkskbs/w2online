@@ -2,7 +2,6 @@ package db
 
 import (
 	"time"
-	"work/pkg/errmsg"
 
 	"gorm.io/gorm/clause"
 )
@@ -25,14 +24,14 @@ func GetVideoLikeList(vid string) (*[]string, error) {
 
 func CreateVideoLike(videoLike *VideoLike) error {
 	if err := DB.Create(videoLike).Error; err != nil {
-		return errmsg.ServiceError
+		return err
 	}
 	return nil
 }
 
 func DeleteVideoLike(vid, uid string) error {
 	if err := DB.Where("video_id = ? and user_id = ?", vid, uid).Delete(&VideoLike{}).Error; err != nil {
-		return errmsg.ServiceError
+		return err
 	}
 	return nil
 }

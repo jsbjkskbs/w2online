@@ -11,7 +11,7 @@ import (
 func PutCommentLikeInfo(cid string, uidList *[]string) error {
 	exist, err := redisDBCommentInfo.Exists(`l:` + cid).Result()
 	if err != nil {
-		return errmsg.RedisError
+		return err
 	}
 	pipe := redisDBCommentInfo.TxPipeline()
 	if exist != 0 {
@@ -21,7 +21,7 @@ func PutCommentLikeInfo(cid string, uidList *[]string) error {
 		pipe.HSet(`l:`+cid, item, 1)
 	}
 	if _, err := pipe.Exec(); err != nil {
-		return errmsg.RedisError
+		return err
 	}
 	return nil
 }
@@ -29,7 +29,7 @@ func PutCommentLikeInfo(cid string, uidList *[]string) error {
 func PutCommentChildInfo(cid string, cidList *[]string) error {
 	exist, err := redisDBCommentInfo.Exists(`c:` + cid).Result()
 	if err != nil {
-		return errmsg.RedisError
+		return err
 	}
 	pipe := redisDBCommentInfo.TxPipeline()
 	if exist != 0 {
@@ -39,7 +39,7 @@ func PutCommentChildInfo(cid string, cidList *[]string) error {
 		pipe.RPush(`c:`+cid, item).Result()
 	}
 	if _, err := pipe.Exec(); err != nil {
-		return errmsg.RedisError
+		return err
 	}
 	return nil
 }
@@ -55,7 +55,7 @@ func PutCommentInfo(comment *db.Comment) error {
 	}
 	pipe.RPush(`i:`+fmt.Sprint(comment.Id), comment.UserId, comment.VideoId, comment.ParentId, comment.Content, comment.CreatedAt, comment.UpdatedAt, comment.DeletedAt)
 	if _, err := pipe.Exec(); err != nil {
-		return errmsg.RedisError
+		return err
 	}
 	return nil
 }
@@ -63,7 +63,7 @@ func PutCommentInfo(comment *db.Comment) error {
 func GetCommentLikeCount(cid string) (int64, error) {
 	count, err := redisDBCommentInfo.HLen(`l:` + cid).Result()
 	if err != nil {
-		return -1, errmsg.RedisError
+		return -1, err
 	}
 	return count, nil
 }
@@ -71,7 +71,7 @@ func GetCommentLikeCount(cid string) (int64, error) {
 func GetCommentLikeList(cid string) (*map[string]string, error) {
 	list, err := redisDBCommentInfo.HGetAll(`l:` + cid).Result()
 	if err != nil {
-		return nil, errmsg.RedisError
+		return nil, err
 	}
 	return &list, nil
 }
@@ -79,7 +79,7 @@ func GetCommentLikeList(cid string) (*map[string]string, error) {
 func GetCommentChildCount(cid string) (int64, error) {
 	count, err := redisDBCommentInfo.LLen(`c:` + cid).Result()
 	if err != nil {
-		return -1, errmsg.RedisError
+		return -1, err
 	}
 	return count, err
 }
@@ -87,7 +87,7 @@ func GetCommentChildCount(cid string) (int64, error) {
 func GetCommentChildList(cid string, pageNum, pageSize int64) (*[]string, error) {
 	list, err := redisDBCommentInfo.LRange(`c:`+cid, (pageNum-1)*pageSize, pageNum*pageSize-1).Result()
 	if err != nil {
-		return nil, errmsg.RedisError
+		return nil, err
 	}
 	return &list, nil
 }
@@ -95,7 +95,7 @@ func GetCommentChildList(cid string, pageNum, pageSize int64) (*[]string, error)
 func GetCommentInfo(cid string) (*db.Comment, error) {
 	info, err := redisDBCommentInfo.LRange(`i:`+cid, 0, 6).Result()
 	if err != nil {
-		return nil, errmsg.RedisError
+		return nil, err
 	}
 	createdAt, _ := strconv.ParseInt(info[4], 10, 64)
 	updatedAt, _ := strconv.ParseInt(info[5], 10, 64)
@@ -114,7 +114,7 @@ func GetCommentInfo(cid string) (*db.Comment, error) {
 func GetCommentVideoId(cid string) (string, error) {
 	info, err := redisDBCommentInfo.LRange(`i:`+cid, 1, 1).Result()
 	if err != nil {
-		return ``, errmsg.RedisError
+		return ``, err
 	}
 	return info[0], nil
 }
@@ -129,7 +129,7 @@ func AppendCommentLikeInfo(cid, uid string) error {
 	}
 	_, err := redisDBCommentInfo.HSet(`l:`+cid, uid, 1).Result()
 	if err != nil {
-		return errmsg.RedisError
+		return err
 	}
 	return nil
 }
@@ -140,14 +140,14 @@ func RemoveCommentLikeInfo(cid, uid string) error {
 	}
 	lExist, err := redisDBCommentInfo.HExists(`l:`+cid, uid).Result()
 	if err != nil {
-		return errmsg.RedisError
+		return err
 	}
 	if !lExist {
 		return nil
 	}
 	_, err = redisDBCommentInfo.HSet(`l:`+cid, uid, 2).Result()
 	if err != nil {
-		return errmsg.RedisError
+		return err
 	}
 	return nil
 }
@@ -155,7 +155,7 @@ func RemoveCommentLikeInfo(cid, uid string) error {
 func AppendChildCommentInfo(cid, childId string) error {
 	_, err := redisDBCommentInfo.RPush(`c:`+cid, childId).Result()
 	if err != nil {
-		return errmsg.RedisError
+		return err
 	}
 	return nil
 }
@@ -163,7 +163,7 @@ func AppendChildCommentInfo(cid, childId string) error {
 func RemoveChildCommentInfo(cid, childId string) error {
 	_, err := redisDBCommentInfo.LRem(`c:`+cid, 1, childId).Result()
 	if err != nil {
-		return errmsg.RedisError
+		return err
 	}
 	return nil
 }

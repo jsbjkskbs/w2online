@@ -17,6 +17,8 @@
 |/user/login|无|
 |/user/info|双token生成的新access-token会放置在response的Header内|
 |/user/avatar/upload|用redis缓存上传状态，防止上传过程中仍执行上传操作|
+|/auth/mfa/qrcode|无|
+|/auth/mfa/bind|无|
 |/video/publish|被拆分为以下四个接口|
 |/video/publish/start|请求新建上传事务,服务端用redis记录上传请求|
 |/video/publish/uploading|上传分片,客户端需将视频分片为m3u8和ts文件,服务端用redis记录上传过程并检验md5|
@@ -71,3 +73,8 @@
 
 #### 2024.2.1 (4th upload)
 - 完成WebSocket聊天
+
+#### 2024.2.1 (5th upload)
+- 完成所提供的全部接口
+- 基本改良或统一各个package返回的error格式
+

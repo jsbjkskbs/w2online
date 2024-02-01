@@ -71,24 +71,24 @@ func (service VideoService) NewUploadCompleteEvent(request *video.VideoPublishCo
 
 	m3u8name, err := redis.GetM3U8Filename(request.Uuid, uid)
 	if err != nil {
-		return err
+		return errmsg.RedisError
 	}
 
 	err = utils.M3u8ToMp4(`./pkg/data/temp/video/`+uid+`_`+request.Uuid+`/`+m3u8name,
 		`./pkg/data/temp/video/`+uid+`_`+request.Uuid+`/`+`video.mp4`)
 	if err != nil {
-		return err
+		return errmsg.ServiceError
 	}
 
 	err = utils.GenerateMp4CoverJpg(`./pkg/data/temp/video/`+uid+`_`+request.Uuid+`/`+`video.mp4`,
 		`./pkg/data/temp/video/`+uid+`_`+request.Uuid+`/`+`cover.jpg`)
 	if err != nil {
-		return err
+		return errmsg.ServiceError
 	}
 
 	info, err := redis.FinishVideoEvent(request.Uuid, uid)
 	if err != nil {
-		return err
+		return errmsg.RedisError
 	}
 
 	uidInt64, _ := strconv.Atoi(uid)
@@ -103,7 +103,7 @@ func (service VideoService) NewUploadCompleteEvent(request *video.VideoPublishCo
 	}
 	vid, err := db.CreateVideo(&d)
 	if err != nil {
-		return err
+		return errmsg.ServiceError
 	}
 
 	var (
@@ -116,34 +116,34 @@ func (service VideoService) NewUploadCompleteEvent(request *video.VideoPublishCo
 	go func() {
 		videoUrl, err = qiniuyunoss.UploadVideo(`./pkg/data/temp/video/`+uid+`_`+request.Uuid+`/`+`video.mp4`, vid)
 		if err != nil {
-			errChan <- err
+			errChan <- errmsg.OssUploadError
 		}
 		wg.Done()
 	}()
 	go func() {
 		coverUrl, err = qiniuyunoss.UploadVideoCover(`./pkg/data/temp/video/`+uid+`_`+request.Uuid+`/`+`cover.jpg`, vid)
 		if err != nil {
-			errChan <- err
+			errChan <- errmsg.OssUploadError
 		}
 		wg.Done()
 	}()
 	go func() {
 		user, err = db.QueryUserByUid(uid)
 		if err != nil {
-			errChan <- err
+			errChan <- errmsg.ServiceError
 		}
 		wg.Done()
 	}()
 	wg.Wait()
 	select {
-	case result := <-errChan:
-		return result
+	case err := <-errChan:
+		return err
 	default:
 	}
 
 	err = db.UpdateVideoUrl(videoUrl, coverUrl, vid)
 	if err != nil {
-		return err
+		return errmsg.ServiceError
 	}
 
 	err = elasticsearch.CreateVideoDoc(&elasticsearch.Video{
@@ -169,7 +169,7 @@ func (service VideoService) NewUploadCompleteEvent(request *video.VideoPublishCo
 
 	err = redis.DeleteVideoEvent(request.Uuid, uid)
 	if err != nil {
-		return err
+		return errmsg.RedisError
 	}
 
 	err = service.deleteTempDir(`./pkg/data/temp/video/` + uid + `_` + request.Uuid)
@@ -221,7 +221,7 @@ func (service VideoService) NewUploadingEvent(request *video.VideoPublishUploadi
 	if request.IsM3U8 {
 		err := redis.RecordM3U8Filename(request.Uuid, uid, request.Filename)
 		if err != nil {
-			return err
+			return errmsg.RedisError
 		}
 	}
 
@@ -247,7 +247,7 @@ func (service VideoService) NewUploadEvent(request *video.VideoPublishStartReque
 	}
 	uuid, err = redis.NewVideoEvent(request.Title, request.Description, uid, fmt.Sprint(request.ChunkTotalNumber))
 	if err != nil {
-		return ``, err
+		return ``, errmsg.RedisError
 	}
 	os.Mkdir(`./pkg/data/temp/video/`+uid+`_`+uuid, os.ModePerm)
 	return uuid, nil
@@ -341,8 +341,8 @@ func (service VideoService) NewListEvent(request *video.VideoListRequest) (*vide
 	}()
 	wg.Wait()
 	select {
-	case result := <-errChan:
-		return nil, result
+	case err := <-errChan:
+		return nil, err
 	default:
 	}
 	items, total, err := elasticsearch.SearchVideoDocByUserId(request.UserId, request.PageNum, request.PageSize)
@@ -355,11 +355,11 @@ func (service VideoService) NewListEvent(request *video.VideoListRequest) (*vide
 func (service VideoService) NewVisitEvent(request *video.VideoVisitRequest) (*base.Video, error) {
 	vid := service.c.Param(`id`)
 	if err := redis.IncrVideoVisitInfo(vid); err != nil {
-		return nil, err
+		return nil, errmsg.RedisError
 	}
 	info, err := elasticsearch.GetVideoDoc(vid)
 	if err != nil {
-		return nil, err
+		return nil, errmsg.ElasticError
 	}
 	return info, nil
 }
@@ -385,15 +385,15 @@ func (service VideoService) NewPopularEvent(request *video.VideoPopularRequest) 
 		go func(i int, item string) {
 			items[i], err = elasticsearch.GetVideoDoc(item)
 			if err != nil {
-				errChan <- err
+				errChan <- errmsg.ElasticError
 			}
 			wg.Done()
 		}(i, item)
 	}
 	wg.Wait()
 	select {
-	case result := <-errChan:
-		return nil, result
+	case err := <-errChan:
+		return nil, err
 	default:
 	}
 	return &video.VideoPopularResponse_VideoPopularResponseData{Items: items}, nil

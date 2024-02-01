@@ -30,10 +30,10 @@ func NewUserService(ctx context.Context, c *app.RequestContext) *UserService {
 	}
 }
 
-func (service UserService) UserServiceRegister(request *user.UserRegisterRequest) (uid string, err error) {
+func (service UserService) NewRegisterEvent(request *user.UserRegisterRequest) (uid string, err error) {
 	exist, err := db.UserIsExistByUsername(request.Username)
 	if err != nil {
-		return ``, err
+		return ``, errmsg.ServiceError
 	}
 	if exist {
 		return ``, errmsg.UsernameAlreadyExistError
@@ -45,22 +45,33 @@ func (service UserService) UserServiceRegister(request *user.UserRegisterRequest
 		CreatedAt: time.Now().Unix(),
 		DeletedAt: 0,
 		UpdatedAt: time.Now().Unix(),
+		MfaEnable: false,
 	})
 	if err != nil {
-		return ``, err
+		return ``, errmsg.ServiceError
 	}
 	return uid, nil
 }
 
-func (service UserService) UserServiceLogin(request *user.UserLoginRequest) (*db.User, error) {
-	return db.VerifyUserByUsername(request.Username, utils.EncryptBySHA256(request.Password))
+func (service UserService) NewLoginEvent(request *user.UserLoginRequest) (*db.User, error) {
+	user, err := db.VerifyUserByUsername(request.Username, utils.EncryptBySHA256(request.Password))
+	if err != nil {
+		return nil, errmsg.ServiceError
+	}
+	if user.MfaEnable {
+		passed := utils.NewAuthController(fmt.Sprint(user.Uid), request.Code, user.MfaSecret).VerifyTOTP()
+		if !passed {
+			return nil, errmsg.AuthenticatorError
+		}
+	}
+	return user, nil
 }
 
-func (service UserService) UserServiceInfo(request *user.UserInfoRequest) (*db.User, error) {
+func (service UserService) NewInfoEvent(request *user.UserInfoRequest) (*db.User, error) {
 	return db.QueryUserByUid(request.UserId)
 }
 
-func (service UserService) UserServiceAvatarUpload(request *user.UserAvatarUploadRequest) (*db.User, error) {
+func (service UserService) NewAvatarUploadEvent(request *user.UserAvatarUploadRequest) (*db.User, error) {
 	uid, err := jwt.CovertJWTPayloadToString(service.ctx, service.c)
 	if err != nil {
 		return nil, errmsg.TokenIsInavailableError
@@ -83,6 +94,40 @@ func (service UserService) UserServiceAvatarUpload(request *user.UserAvatarUploa
 	}
 
 	return data, nil
+}
+
+func (service UserService) NewQrcodeEvent(request *user.AuthMfaQrcodeRequest) (*user.AuthMfaQrcodeResponse_Qrcode, error) {
+	uid, err := jwt.CovertJWTPayloadToString(service.ctx, service.c)
+	if err != nil {
+		return nil, errmsg.AuthenticatorError
+	}
+
+	authInfo, err := utils.NewAuthController(uid, ``, ``).GenerateTOTP()
+	if err != nil {
+		return nil, errmsg.ServiceError
+	}
+
+	return &user.AuthMfaQrcodeResponse_Qrcode{
+		Secret: authInfo.Secret,
+		Qrcode: utils.EncodeUrlToBase64String(authInfo.Url),
+	}, nil
+}
+
+func (service UserService) NewMfaBindEvent(request *user.AuthMfaBindRequest) error {
+	uid, err := jwt.CovertJWTPayloadToString(service.ctx, service.c)
+	if err != nil {
+		return errmsg.AuthenticatorError
+	}
+
+	passed := utils.NewAuthController(uid, request.Code, request.Secret).VerifyTOTP()
+	if !passed {
+		return errmsg.AuthenticatorError
+	}
+
+	if err := db.UpdateMfaSecret(uid, request.Secret); err != nil {
+		return errmsg.ServiceError
+	}
+	return nil
 }
 
 func (service UserService) uploadAvatarToOss(uid string) (*db.User, error) {

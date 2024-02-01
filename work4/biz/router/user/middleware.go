@@ -30,7 +30,7 @@ func _bindMw() []app.HandlerFunc {
 
 func _authmfabindMw() []app.HandlerFunc {
 	// your code...
-	return nil
+	return authfunc.Auth()
 }
 
 func _qrcodeMw() []app.HandlerFunc {
@@ -40,7 +40,7 @@ func _qrcodeMw() []app.HandlerFunc {
 
 func _authmfaqrcodeMw() []app.HandlerFunc {
 	// your code...
-	return nil
+	return authfunc.Auth()
 }
 
 func _userMw() []app.HandlerFunc {

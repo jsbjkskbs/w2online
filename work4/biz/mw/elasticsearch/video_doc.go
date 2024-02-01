@@ -227,7 +227,7 @@ func UpdateVideoLikeVisitAndCommentCount(vid, likeCount, visitCount, commentCoun
 		Script(elastic.NewScript(`"ctx._source.info.comment_count=params.new_comment_count"`).Param("new_comment_count", newCommentCount))
 	bulk.Add(vRequest, lRequest, cRequest)
 	if _, err := bulk.Do(context.Background()); err != nil {
-		return errmsg.ElasticError
+		return err
 	}
 	return nil
 }

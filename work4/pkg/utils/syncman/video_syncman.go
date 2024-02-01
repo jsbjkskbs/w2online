@@ -76,6 +76,7 @@ func (sm VideoSyncman) Run() {
 				select {
 				case result := <-errChan:
 					hlog.Error(result)
+					continue
 				default:
 				}
 				likeCount := 0
@@ -93,6 +94,10 @@ func (sm VideoSyncman) Run() {
 						}
 					}
 				}
+				if err := db.UpdateVideoVisit(vid, fmt.Sprint(visitCount)); err != nil {
+					hlog.Error(err)
+				}
+
 				err := elasticsearch.UpdateVideoLikeVisitAndCommentCount(vid, fmt.Sprint(likeCount), fmt.Sprint(visitCount), fmt.Sprint(commentCount))
 				if err != nil {
 					hlog.Error(err)

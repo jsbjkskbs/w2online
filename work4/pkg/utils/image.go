@@ -27,7 +27,7 @@ func (ImageInfo) Get(data []byte, tag string) (height, width int, err error) {
 		return -1, -1, errmsg.FileFormatNotSupportError
 	}
 	if err != nil {
-		return -1, -1, errmsg.ServiceError
+		return -1, -1, err
 	}
 	return imgCfg.Height, imgCfg.Width, err
 }

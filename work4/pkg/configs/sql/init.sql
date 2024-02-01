@@ -10,6 +10,8 @@ create table `users`(
     `created_at` bigint not null comment '创建账号时间',
     `updated_at` bigint not null comment '最近登录时间',
     `deleted_at` bigint not null comment '账号删除时间',
+    `mfa_enable` bool not null comment '是否使用mfa',
+    `mfa_secret` varchar(255) not null comment 'mfa秘钥',
     primary key (`uid`),
     key `username_password_index` (`username`,`password`) using btree comment '用户名与密码索引'
 ) engine =InnoDB auto_increment=10000 default charset =utf8mb4 comment ='用户表';

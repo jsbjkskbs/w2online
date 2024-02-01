@@ -80,28 +80,28 @@ func (service InteractService) NewCommentPublishEvent(request *interact.CommentP
 	wg.Add(3)
 	go func() {
 		if err := redis.PutCommentInfo(&newComment); err != nil {
-			errChan <- err
+			errChan <- errmsg.RedisError
 		}
 		wg.Done()
 	}()
 	go func() {
 		if err := redis.AppendVideoCommentInfo(newComment.VideoId, fmt.Sprint(newComment.Id)); err != nil {
-			errChan <- err
+			errChan <- errmsg.RedisError
 		}
 		wg.Done()
 	}()
 	go func() {
 		if newComment.ParentId != `-1` {
 			if err := redis.AppendChildCommentInfo(request.CommentId, fmt.Sprint(newComment.Id)); err != nil {
-				errChan <- err
+				errChan <- errmsg.RedisError
 			}
 		}
 		wg.Done()
 	}()
 	wg.Wait()
 	select {
-	case result := <-errChan:
-		return result
+	case err := <-errChan:
+		return err
 	default:
 	}
 	return nil
@@ -120,13 +120,13 @@ func (service InteractService) NewLikeActionEvent(request *interact.LikeActionRe
 		case `1`:
 			{
 				if err := redis.AppendVideoLikeInfo(request.VideoId, uid); err != nil {
-					return err
+					return errmsg.RedisError
 				}
 			}
 		case `2`:
 			{
 				if err := redis.RemoveVideoLikeInfo(request.VideoId, uid); err != nil {
-					return err
+					return errmsg.RedisError
 				}
 			}
 		}
@@ -138,13 +138,13 @@ func (service InteractService) NewLikeActionEvent(request *interact.LikeActionRe
 		case `1`:
 			{
 				if err := redis.AppendCommentLikeInfo(request.CommentId, uid); err != nil {
-					return err
+					return errmsg.RedisError
 				}
 			}
 		case `2`:
 			{
 				if err := redis.RemoveCommentLikeInfo(request.CommentId, uid); err != nil {
-					return err
+					return errmsg.RedisError
 				}
 			}
 		}
@@ -316,29 +316,35 @@ func deleteVideo(request *interact.CommentDeleteRequest) error {
 		wg      sync.WaitGroup
 		errChan = make(chan error, 3)
 	)
-	wg.Add(3)
+	wg.Add(4)
 	go func() {
 		if err := db.DeleteVideo(request.VideoId); err != nil {
-			errChan <- err
+			errChan <- errmsg.ServiceError
 		}
 		wg.Done()
 	}()
 	go func() {
 		if err := db.DeleteCommentAndCommentLikeAboutVideo(request.VideoId); err != nil {
-			errChan <- err
+			errChan <- errmsg.ServiceError
 		}
 		wg.Done()
 	}()
 	go func() {
 		if err := redis.DeleteVideoAndAllAbout(request.VideoId); err != nil {
-			errChan <- err
+			errChan <- errmsg.RedisError
+		}
+		wg.Done()
+	}()
+	go func() {
+		if err := elasticsearch.DeleteVideoDoc(request.VideoId); err != nil {
+			errChan <- errmsg.ElasticError
 		}
 		wg.Done()
 	}()
 	wg.Wait()
 	select {
-	case <-errChan:
-		return errmsg.ServiceError
+	case err := <-errChan:
+		return err
 	default:
 	}
 	return nil
@@ -355,20 +361,20 @@ func deleteComment(request *interact.CommentDeleteRequest) error {
 	wg.Add(2)
 	go func() {
 		if err := db.DeleteChildAndLikesOfParentAndChild(request.CommentId); err != nil {
-			errChan <- err
+			errChan <- errmsg.RedisError
 		}
 		wg.Done()
 	}()
 	go func() {
 		if err := redis.DeleteCommentAndAllAbout(request.CommentId); err != nil {
-			errChan <- err
+			errChan <- errmsg.RedisError
 		}
 		wg.Done()
 	}()
 	wg.Wait()
 	select {
-	case <-errChan:
-		return errmsg.ServiceError
+	case err := <-errChan:
+		return err
 	default:
 	}
 	return nil

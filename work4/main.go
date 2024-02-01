@@ -6,6 +6,7 @@ import (
 	"work/biz/dal"
 	"work/biz/mw/elasticsearch"
 	"work/biz/mw/jwt"
+	"work/biz/mw/redis"
 	webs "work/biz/router/websocket"
 	qiniuyunoss "work/pkg/qiniuyun_oss"
 	"work/pkg/utils/dustman"
@@ -15,8 +16,9 @@ import (
 )
 
 func main() {
-	elasticsearch.Init()
 	dal.Init()
+	redis.Init()
+	elasticsearch.Init()
 	jwt.AccessTokenJwtInit()
 	jwt.RefreshTokenJwtInit()
 	qiniuyunoss.OssInit()

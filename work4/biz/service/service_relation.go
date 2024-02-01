@@ -71,13 +71,13 @@ func (service RelationService) NewFollowingListEvent(request *relation.Following
 	}
 	list, err := db.GetFollowListPaged(request.UserId, request.PageNum, request.PageSize)
 	if err != nil {
-		return nil, err
+		return nil, errmsg.ServiceError
 	}
 	data := make([]*base.UserLite, 0)
 	for _, item := range *list {
 		user, err := db.QueryUserByUid(item)
 		if err != nil {
-			return nil, err
+			return nil, errmsg.ServiceError
 		}
 		d := base.UserLite{
 			Uid:       item,
@@ -109,13 +109,13 @@ func (service RelationService) NewFollowerEvent(request *relation.FollowerListRe
 	}
 	list, err := db.GetFollowerListPaged(request.UserId, request.PageNum, request.PageSize)
 	if err != nil {
-		return nil, err
+		return nil, errmsg.ServiceError
 	}
 	data := make([]*base.UserLite, 0)
 	for _, item := range *list {
 		user, err := db.QueryUserByUid(item)
 		if err != nil {
-			return nil, err
+			return nil, errmsg.ServiceError
 		}
 		d := base.UserLite{
 			Uid:       item,
@@ -144,14 +144,14 @@ func (service RelationService) NewFriendListEvent(request *relation.FriendListRe
 	}
 	list, err := redis.GetFriendList(uid)
 	if err != nil {
-		return nil, err
+		return nil, errmsg.RedisError
 	}
 	start, end := utils.SlicePage(int(request.PageNum), int(request.PageSize), len(*list))
 	data := make([]*base.UserLite, 0)
 	for _, item := range (*list)[start:end] {
 		user, err := db.QueryUserByUid(item)
 		if err != nil {
-			return nil, err
+			return nil, errmsg.ServiceError
 		}
 		d := base.UserLite{
 			Uid:       item,
@@ -175,20 +175,20 @@ func createFollow(uid string, request *relation.RelationActionRequest) error {
 	wg.Add(2)
 	go func() {
 		if err := redis.AppendFollow(uid, request.ToUserId); err != nil {
-			errChan <- err
+			errChan <- errmsg.RedisError
 		}
 		wg.Done()
 	}()
 	go func() {
 		if err := redis.AppendFollower(request.ToUserId, uid); err != nil {
-			errChan <- err
+			errChan <- errmsg.RedisError
 		}
 		wg.Done()
 	}()
 	wg.Wait()
 	select {
-	case result := <-errChan:
-		return result
+	case err := <-errChan:
+		return err
 	default:
 	}
 	return nil
@@ -212,20 +212,20 @@ func cancleFollow(uid string, request *relation.RelationActionRequest) error {
 	wg.Add(2)
 	go func() {
 		if err := redis.RemoveFollow(uid, request.ToUserId); err != nil {
-			errChan <- err
+			errChan <- errmsg.RedisError
 		}
 		wg.Done()
 	}()
 	go func() {
 		if err := redis.RemoveFollower(request.ToUserId, uid); err != nil {
-			errChan <- err
+			errChan <- errmsg.RedisError
 		}
 		wg.Done()
 	}()
 	wg.Wait()
 	select {
-	case result := <-errChan:
-		return result
+	case err := <-errChan:
+		return err
 	default:
 	}
 	return nil
