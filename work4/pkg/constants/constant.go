@@ -6,12 +6,12 @@ import (
 
 // 数据库连接
 const (
-	MysqlDSN = `work:work123456@tcp(mysql:3306)/work`
+	MysqlDSN = `work:work123456@tcp(localhost:13306)/work`//`work:work123456@tcp(mysql:3306)/work`
 
-	RedisAddr     = `redis:6379`
+	RedisAddr     = `localhost:16379`//`redis:6379`
 	RedisPassword = `work123456`
 
-	ElasticAddr = `http://es01:9200`
+	ElasticAddr = `http://localhost:9200`//`http://es01:9200`
 )
 
 const (

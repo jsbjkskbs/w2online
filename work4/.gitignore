@@ -39,3 +39,4 @@ dumped_hertz_remote_config.json
 /pkg/configs/es/plugins
 /work
 /test.sh
+/code_analyze

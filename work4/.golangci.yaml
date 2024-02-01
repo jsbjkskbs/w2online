@@ -1,0 +1,39 @@
+linters:
+  disable-all: true
+  enable: 
+    - gocyclo         # 代码复杂度
+    # - deadcode      # 禁止未使用代码块
+    - dupl            # 减少拷贝
+    - ineffassign     # 无效赋值
+    - durationcheck   # 禁止time.Duration相乘
+    - errcheck        # 所有err都要处理
+    - funlen          # 常函数
+    - goconst         # 重复常量替换
+    - ifshort         # if语句简单语法
+    - lll             # 禁止出现长语句
+    - containedctx    # struct内不应当有context.Context
+    - nilnil          # 禁止同时返回nil的error和nil的指针
+    - nosprintfhostport # fmt.Sprintf不可用于构造host和port
+    - prealloc        # 如果知道slice大小，就需要预分配空间
+    # - forcetypeassert # 断言后必须检查是否成功
+    - goerr113        # 禁止errors比较
+    - gofmt
+    - gofumpt
+    - goimports
+    - gomnd           # 禁用怪异数字
+    - goprintffuncname # 类似printf函数是否以f结尾
+    - gosec           # 安全检查
+    - govet           # 错误检查
+    - misspell        # 拼写错误
+    - nestif          # 禁止if过分嵌套
+    - predeclared     # 禁止用go关键字命名
+    - unconvert       # 禁止非必要type转换
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  funlen:
+    lines: 200
+    statements: 40
+  

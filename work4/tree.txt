@@ -1,0 +1,145 @@
+.
+├── biz
+│   ├── dal
+│   │   ├── db
+│   │   │   ├── comment.go
+│   │   │   ├── comment_likes.go
+│   │   │   ├── follow.go
+│   │   │   ├── init.go
+│   │   │   ├── user.go
+│   │   │   ├── video.go
+│   │   │   └── video_likes.go
+│   │   └── init.go
+│   ├── handler
+│   │   ├── interact
+│   │   │   └── interact_handler.go
+│   │   ├── ping.go
+│   │   ├── relation
+│   │   │   └── ralation_handler.go
+│   │   ├── test
+│   │   │   └── test_handler.go
+│   │   ├── user
+│   │   │   └── user_handler.go
+│   │   ├── video
+│   │   │   └── video_handler.go
+│   │   └── ws_chat
+│   │       └── ws_chat.go
+│   ├── model
+│   │   ├── api
+│   │   │   └── api.pb.go
+│   │   ├── base
+│   │   │   ├── base.pb.go
+│   │   │   ├── interact
+│   │   │   │   └── interact.pb.go
+│   │   │   ├── relation
+│   │   │   │   └── relation.pb.go
+│   │   │   ├── user
+│   │   │   │   └── user.pb.go
+│   │   │   └── video
+│   │   │       └── video.pb.go
+│   │   └── test
+│   │       └── test.pb.go
+│   ├── mw
+│   │   ├── elasticsearch
+│   │   │   ├── init.go
+│   │   │   ├── video_doc.go
+│   │   │   └── video_index_init.go
+│   │   ├── jwt
+│   │   │   └── jwt.go
+│   │   └── redis
+│   │       ├── avatar_upload.go
+│   │       ├── chat_info.go
+│   │       ├── comment_info.go
+│   │       ├── init.go
+│   │       ├── relation_info.go
+│   │       ├── video_info.go
+│   │       └── video_upload.go
+│   ├── router
+│   │   ├── authfunc
+│   │   │   └── auth_logic.go
+│   │   ├── interact
+│   │   │   ├── interact.go
+│   │   │   └── middleware.go
+│   │   ├── register.go
+│   │   ├── relation
+│   │   │   ├── middleware.go
+│   │   │   └── relation.go
+│   │   ├── test
+│   │   │   ├── middleware.go
+│   │   │   └── test.go
+│   │   ├── user
+│   │   │   ├── middleware.go
+│   │   │   └── user.go
+│   │   ├── video
+│   │   │   ├── middleware.go
+│   │   │   └── video.go
+│   │   └── websocket
+│   │       ├── ws_auth.go
+│   │       ├── ws_middleware.go
+│   │       ├── ws_register.go
+│   │       └── ws_router.go
+│   └── service
+│       ├── service_interact.go
+│       ├── service_relation.go
+│       ├── service_user.go
+│       ├── service_video.go
+│       └── service_ws_chat.go
+├── build.sh
+├── docker-build
+│   └── Dockerfile
+├── docker_build.sh
+├── docker-compose-env.env
+├── docker_compose_release.sh
+├── docker-compose.yaml
+├── go.mod
+├── go.sum
+├── hz_gen.sh
+├── idl
+│   ├── api.proto
+│   ├── base.proto
+│   ├── interact.proto
+│   ├── relation.proto
+│   ├── test.proto
+│   ├── user.proto
+│   └── video.proto
+├── main.go
+├── main_test.go
+├── pkg
+│   ├── configs
+│   │   ├── es
+│   │   │   └── elasticsearch.yml
+│   │   ├── kibana
+│   │   │   └── kibana.yml
+│   │   ├── redis
+│   │   │   └── redis.conf
+│   │   └── sql
+│   │       └── init.sql
+│   ├── constants
+│   │   └── constant.go
+│   ├── errmsg
+│   │   └── errmsg.go
+│   ├── qiniuyun_oss
+|   |   ├── config.go
+│   │   └── qiniuyun_oss.go
+│   └── utils
+│       ├── base64.go
+│       ├── dustman
+│       │   └── dustman.go
+│       ├── encrypt.go
+│       ├── ffmpeg.go
+│       ├── http_resp.go
+│       ├── image.go
+│       ├── md5.go
+│       ├── mfa.go
+│       ├── slice_page.go
+│       ├── syncman
+│       │   ├── comment_syncman.go
+│       │   ├── relation_syncman.go
+│       │   └── video_syncman.go
+│       └── time.go
+├── README.md
+├── router_gen.go
+├── router.go
+├── script
+│   └── bootstrap.sh
+└── tree.txt
