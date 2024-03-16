@@ -12,7 +12,7 @@ var (
 	elasticClient *elastic.Client
 )
 
-func Init() {
+func Load() {
 	var err error
 	elasticClient, err = elastic.NewClient(
 		elastic.SetURL(constants.ElasticAddr),

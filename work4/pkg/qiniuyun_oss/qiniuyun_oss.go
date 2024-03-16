@@ -26,11 +26,11 @@ var (
 	upToken        string
 )
 
-func OssInit() {
+func Load() {
 	putPolicy := storage.PutPolicy{
-		Scope: bucket,
+		Scope: Bucket,
 	}
-	mac = qbox.NewMac(accessKey, secretKey)
+	mac = qbox.NewMac(AccessKey, SecretKey)
 	upToken = putPolicy.UploadToken(mac)
 	cfg := storage.Config{
 		UseHTTPS:      false,
@@ -42,7 +42,7 @@ func OssInit() {
 	bucketManager = storage.NewBucketManager(mac, &cfg)
 	resumeUploader = storage.NewResumeUploaderV2(&cfg)
 
-	hlog.Info("Oss service initialized successfully")
+	hlog.Info("Oss service prepared successfully")
 }
 
 func UploadAvatar(data *[]byte, dataSize int64, uid string, tag string) (string, error) {
@@ -68,7 +68,7 @@ func UploadAvatar(data *[]byte, dataSize int64, uid string, tag string) (string,
 	if err != nil {
 		return ``, errmsg.OssUploadError
 	}
-	return url + `/avatar/` + uid + suffix, nil
+	return Url + `/avatar/` + uid + suffix, nil
 }
 
 func deleteAvatar(uid string) {
@@ -78,7 +78,7 @@ func deleteAvatar(uid string) {
 		`avatar/` + uid + `.png`,
 	}
 	for _, key := range keys {
-		bucketManager.Delete(bucket, key)
+		bucketManager.Delete(Bucket, key)
 	}
 }
 
@@ -102,7 +102,7 @@ func UploadVideo(path, vid string) (string, error) {
 	if err != nil {
 		return ``, errmsg.OssUploadError
 	}
-	return url + `/video/` + vid + `/video.mp4`, nil
+	return Url + `/video/` + vid + `/video.mp4`, nil
 }
 
 func UploadVideoCover(path, vid string) (string, error) {
@@ -119,5 +119,5 @@ func UploadVideoCover(path, vid string) (string, error) {
 	if err != nil {
 		return ``, errmsg.OssUploadError
 	}
-	return url + `/video/` + vid + `/cover.jpg`, nil
+	return Url + `/video/` + vid + `/cover.jpg`, nil
 }

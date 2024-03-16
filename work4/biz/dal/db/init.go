@@ -11,7 +11,7 @@ import (
 
 var DB *gorm.DB
 
-func Init() {
+func Load() {
 	var err error
 	DB, err = gorm.Open(mysql.Open(constants.MysqlDSN),
 		&gorm.Config{
