@@ -9,7 +9,7 @@ option go_package = "base/user";
 
 message UserRegisterRequest {
     string username = 1[(api.go_tag)='json:"username,required"'];
-    string password = 2[(api.go_tag)='json:"password,required"'];
+    string password = 2[(api.go_tag)='json:"password,required" vd:"len($)>5 && len($)<18; msg:\'invalid password format\'"'];
 }
 
 message UserRegisterResponse {
@@ -20,7 +20,7 @@ message UserRegisterResponse {
 
 message UserLoginRequest {
     string username = 1[(api.go_tag)='json:"username,required"'];
-    string password = 2[(api.go_tag)='json:"password,required"'];
+    string password = 2[(api.go_tag)='json:"password,required" vd:"len($)>5 && len($)<18; msg:\'invalid password format\'"'];
     string code = 3;
 }
 

@@ -22,9 +22,9 @@ message VideoFeedResponse {
 message VideoPublishStartRequest {
     string access_token = 1[(api.header)="Access-Token"];
     string refresh_token = 2[(api.header)="Refresh-Token"];
-    string title = 3[(api.body)="title"];
+    string title = 3[(api.go_tag)='json:"title" vd:"len($)>0; msg:\'title can not be empty\'"'];
     string description = 4[(api.body)="description"];
-    int64 chunk_total_number = 5[(api.body)="chunk_total_number"];
+    int64 chunk_total_number = 5[(api.go_tag)='json:"chunk_total_number" vd:"$>0; msg:\'chunk number can not be lower than zero\'"'];
 }
 
 message VideoPublishStartResponse {

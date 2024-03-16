@@ -1,0 +1,12 @@
+root = true
+
+[*.go]
+indent_style = tab
+tab_width = 4
+
+[*.{go,sql,yaml,yml}]
+end_of_line = lf
+insert_final_newline = true
+
+[*.{go,sql,yaml,yml}]
+charset = utf-8
