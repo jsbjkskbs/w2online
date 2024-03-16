@@ -4,6 +4,6 @@ import (
 	"work/biz/dal/db"
 )
 
-func Init() {
-	db.Init()
+func Load() {
+	db.Load()
 }

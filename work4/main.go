@@ -3,12 +3,9 @@
 package main
 
 import (
-	"work/biz/dal"
-	"work/biz/mw/elasticsearch"
 	"work/biz/mw/jwt"
-	"work/biz/mw/redis"
 	webs "work/biz/router/websocket"
-	qiniuyunoss "work/pkg/qiniuyun_oss"
+	cfgloader "work/pkg/utils/cfg_loader"
 	"work/pkg/utils/dustman"
 	"work/pkg/utils/syncman"
 
@@ -16,21 +13,25 @@ import (
 )
 
 func main() {
-	dal.Init()
-	redis.Init()
-	elasticsearch.Init()
+	cfgloader.Run()
+
 	jwt.AccessTokenJwtInit()
 	jwt.RefreshTokenJwtInit()
-	qiniuyunoss.OssInit()
+
 	dustman.NewRedisDustman().Run()
 	dustman.NewFileDustman().Run()
+
 	syncman.NewVideoSyncman().Run()
 	syncman.NewCommentSyncman().Run()
 	syncman.NewRelationSyncman().Run()
+
 	h := server.Default(server.WithHostPorts(`:10001`))
+
 	ws := server.Default(server.WithHostPorts(`:10000`))
 	ws.NoHijackConnPool = true
+
 	register(h)
+
 	webs.WebsocketRegister(ws)
 
 	go ws.Spin()

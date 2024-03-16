@@ -1,0 +1,13 @@
+{
+    "MysqlDSN": "work:work123456@tcp(localhost:13306)/work",
+
+    "RedisAddr": "localhost:16379",
+    "RedisPassword": "work123456",
+
+    "ElasticAddr": "http://localhost:9200",
+
+    "OssBucket": "",
+    "OssSecretKey": "",
+    "OssAccessKey": "",
+    "OssUrl": ""
+}

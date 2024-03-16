@@ -16,7 +16,7 @@ var (
 	redisDBChatInfo     *redis.Client
 )
 
-func Init() {
+func Load() {
 
 	redisDBAvatarUpload = redis.NewClient(&redis.Options{
 		Addr:     constants.RedisAddr,

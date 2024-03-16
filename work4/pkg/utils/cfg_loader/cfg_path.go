@@ -1,0 +1,3 @@
+package cfgloader
+
+const configPath = `.`

@@ -35,7 +35,6 @@ _testmain.go
 *.local.yml
 dumped_hertz_remote_config.json
 /pkg/data
-/pkg/qiniuyun_oss/cfg.go
 /pkg/configs/es/plugins
 /work
 /test.sh

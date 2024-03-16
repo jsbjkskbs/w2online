@@ -4,14 +4,11 @@ import (
 	"time"
 )
 
-// 数据库连接
-const (
-	MysqlDSN = `work:work123456@tcp(localhost:13306)/work`//`work:work123456@tcp(mysql:3306)/work`
-
-	RedisAddr     = `localhost:16379`//`redis:6379`
-	RedisPassword = `work123456`
-
-	ElasticAddr = `http://localhost:9200`//`http://es01:9200`
+// 中间件连接
+var (
+	MysqlDSN                 string
+	RedisAddr, RedisPassword string
+	ElasticAddr              string
 )
 
 const (
@@ -22,7 +19,7 @@ const (
 	ESNoPageParamFlag      = -1
 )
 
-// 默认url
+// 默认头像url
 const (
 	DefaultAvatarUrl = ``
 )
