@@ -3,13 +3,18 @@
 package main
 
 import (
+	"context"
 	"work/biz/mw/jwt"
 	webs "work/biz/router/websocket"
+	"work/pkg/errmsg"
 	cfgloader "work/pkg/utils/cfg_loader"
 	"work/pkg/utils/dustman"
 	"work/pkg/utils/syncman"
 
+	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/cloudwego/hertz/pkg/common/utils"
+	"github.com/hertz-contrib/opensergo/sentinel/adapter"
 )
 
 func main() {
@@ -26,6 +31,20 @@ func main() {
 	syncman.NewRelationSyncman().Run()
 
 	h := server.Default(server.WithHostPorts(`:10001`))
+	h.Use(
+		adapter.SentinelServerMiddleware(
+			adapter.WithServerResourceExtractor(func(ctx context.Context, rc *app.RequestContext) string {
+				return "default"
+			}),
+			adapter.WithServerBlockFallback(
+				func(ctx context.Context, rc *app.RequestContext) {
+					rc.AbortWithStatusJSON(400, utils.H{
+						"code": errmsg.RequestTooFreqError.ErrorCode,
+						"msg":  errmsg.RequestTooFreqError.ErrorMsg,
+					})
+				}),
+		),
+	)
 
 	ws := server.Default(server.WithHostPorts(`:10000`))
 	ws.NoHijackConnPool = true
