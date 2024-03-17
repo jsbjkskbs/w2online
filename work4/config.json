@@ -9,5 +9,13 @@
     "OssBucket": "",
     "OssSecretKey": "",
     "OssAccessKey": "",
-    "OssUrl": ""
+    "OssUrl": "",
+
+    "SentinelRules":
+    {
+        "default" : {
+            "threshold": 1000,
+            "statintervalinms": 1000
+        }
+    }
 }

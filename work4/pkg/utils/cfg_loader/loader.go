@@ -4,6 +4,7 @@ import (
 	"work/biz/dal"
 	"work/biz/mw/elasticsearch"
 	"work/biz/mw/redis"
+	"work/biz/mw/sentinel"
 	"work/pkg/constants"
 	qiniuyunoss "work/pkg/qiniuyun_oss"
 
@@ -51,4 +52,7 @@ func loadConfig() {
 	qiniuyunoss.AccessKey = globalConfig.GetString("OssAccessKey")
 	qiniuyunoss.Url = globalConfig.GetString("OssUrl")
 	qiniuyunoss.Load()
+
+	sentinel.Rules = globalConfig.GetStringMap("SentinelRules")
+	sentinel.Load()
 }

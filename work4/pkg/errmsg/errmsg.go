@@ -41,6 +41,8 @@ const (
 	FfmpegErrCode
 
 	ElasticErrCode
+
+	RequestTooFreqErrCode
 )
 
 const (
@@ -79,6 +81,8 @@ const (
 	FfmpegErrMsg = "Ffmpeg Error"
 
 	ElasticErrMsg = "Elastic Error"
+
+	RequestTooFreqErrMsg = "too many request, pls wait"
 )
 
 type ErrorMessage struct {
@@ -140,6 +144,8 @@ var (
 	FfmpegError = NewErrorMessage(FfmpegErrCode, FfmpegErrMsg)
 
 	ElasticError = NewErrorMessage(ElasticErrCode, ElasticErrMsg)
+
+	RequestTooFreqError = NewErrorMessage(RequestTooFreqErrCode, RequestTooFreqErrMsg)
 )
 
 // 提供转换方法
