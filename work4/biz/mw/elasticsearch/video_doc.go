@@ -97,6 +97,23 @@ func SearchVideoDocDefault(keywords string) ([]*base.Video, int64, error) {
 	return data, hits, nil
 }
 
+func RandomVideoDoc(fromDate int64) ([]*base.Video, int64, error) {
+	resp, err := elasticClient.Search().
+		Index("video").
+		Type("_doc").
+		Query(elastic.NewFunctionScoreQuery().
+			AddScoreFunc(elastic.NewRandomFunction()).
+			Query(elastic.NewRangeQuery("created_at").From(fromDate)),
+		).
+		Size(constants.DefaultPageSize).
+		Do(context.Background())
+	if err != nil {
+		return nil, -1, err
+	}
+	data, hits := searchRespCovert(resp)
+	return data, hits, nil
+}
+
 func SearchVideoDoc(keywords, username string, pageSize, pageNum, fromDate, toDate int64) ([]*base.Video, int64, error) {
 	var (
 		mustQuery    = make([]elastic.Query, 0)

@@ -3,6 +3,7 @@ package syncman
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 	"work/biz/dal/db"
@@ -60,9 +61,11 @@ func (sm VideoSyncman) Run() {
 				}()
 				go func() {
 					var err error
-					if commentCount, err = redis.GetVideoCommentCount(vid); err != nil {
+					commentCountString, err := db.GetVideoCommentCount(vid)
+					if err != nil {
 						errChan <- err
 					}
+					commentCount, _ = strconv.ParseInt(commentCountString, 10, 64)
 					wg.Done()
 				}()
 				go func() {
@@ -112,10 +115,10 @@ func (sm VideoSyncman) Stop() {
 }
 
 type videoSyncData struct {
-	vid         string
-	likeList    *[]string
-	visitCount  string
-	commentList *[]string
+	vid          string
+	likeList     *[]string
+	visitCount   string
+	commentCount string
 }
 
 func videoSyncMwWhenInit() error {
@@ -146,7 +149,7 @@ func videoSyncMwWhenInit() error {
 			wg.Done()
 		}(&data)
 		go func(data *videoSyncData) {
-			if data.commentList, err = db.GetVideoCommentList(vid); err != nil {
+			if data.commentCount, err = db.GetVideoCommentCount(vid); err != nil {
 				errChan <- err
 			}
 			wg.Done()
@@ -186,10 +189,10 @@ func videoSyncMwWhenInit() error {
 func videoSyncDB2Redis(syncList *[]videoSyncData) error {
 	var (
 		wg      sync.WaitGroup
-		errChan = make(chan error, 3)
+		errChan = make(chan error, 2)
 	)
 	for _, item := range *syncList {
-		wg.Add(3)
+		wg.Add(2)
 		go func(vid, visitCount string) {
 			if err := redis.PutVideoVisitInfo(vid, visitCount); err != nil {
 				errChan <- err
@@ -202,12 +205,6 @@ func videoSyncDB2Redis(syncList *[]videoSyncData) error {
 			}
 			wg.Done()
 		}(item.vid, item.likeList)
-		go func(vid string, commentList *[]string) {
-			if err := redis.PutVideoCommentInfo(vid, commentList); err != nil {
-				errChan <- err
-			}
-			wg.Done()
-		}(item.vid, item.commentList)
 		wg.Wait()
 		select {
 		case result := <-errChan:
@@ -220,7 +217,7 @@ func videoSyncDB2Redis(syncList *[]videoSyncData) error {
 
 func vidoeSyncDB2Elastic(syncList *[]videoSyncData) error {
 	for _, item := range *syncList {
-		if err := elasticsearch.UpdateVideoLikeVisitAndCommentCount(item.vid, fmt.Sprint(len(*item.likeList)), item.visitCount, fmt.Sprint(len(*item.commentList))); err != nil {
+		if err := elasticsearch.UpdateVideoLikeVisitAndCommentCount(item.vid, fmt.Sprint(len(*item.likeList)), item.visitCount, fmt.Sprint(item.commentCount)); err != nil {
 			return err
 		}
 	}

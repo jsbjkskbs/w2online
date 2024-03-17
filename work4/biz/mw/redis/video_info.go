@@ -3,6 +3,7 @@ package redis
 import (
 	"strconv"
 	"sync"
+	"work/biz/dal/db"
 	"work/pkg/errmsg"
 
 	"github.com/go-redis/redis"
@@ -30,24 +31,6 @@ func PutVideoVisitInfo(vid, visitCount string) error {
 	score, _ := strconv.ParseFloat(visitCount, 64)
 	_, err := redisDBVideoInfo.ZAdd(`visit`, redis.Z{Score: score, Member: vid}).Result()
 	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func PutVideoCommentInfo(vid string, cidList *[]string) error {
-	exist, err := redisDBVideoInfo.Exists(`c:` + vid).Result()
-	if err != nil {
-		return err
-	}
-	pipe := redisDBVideoInfo.TxPipeline()
-	if exist != 0 {
-		pipe.Del(`c:` + vid)
-	}
-	for _, item := range *cidList {
-		pipe.RPush(`c:`+vid, item)
-	}
-	if _, err = pipe.Exec(); err != nil {
 		return err
 	}
 	return nil
@@ -90,22 +73,6 @@ func IncrVideoVisitInfo(vid string) error {
 	return nil
 }
 
-func AppendVideoCommentInfo(vid, cid string) error {
-	_, err := redisDBVideoInfo.RPush(`c:`+vid, cid).Result()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func RemoveVideoCommentInfo(vid, cid string) error {
-	_, err := redisDBCommentInfo.LRem(`c:`+vid, 1, cid).Result()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func IsVideoLikedByUser(vid, uid string) (bool, error) {
 	exist, err := redisDBVideoInfo.HExists(`l:`+vid, uid).Result()
 	if err != nil {
@@ -116,22 +83,6 @@ func IsVideoLikedByUser(vid, uid string) (bool, error) {
 
 func GetVideoLikeList(vid string) (*map[string]string, error) {
 	list, err := redisDBVideoInfo.HGetAll(`l:` + vid).Result()
-	if err != nil {
-		return nil, err
-	}
-	return &list, nil
-}
-
-func GetVideoCommentCount(vid string) (int64, error) {
-	count, err := redisDBVideoInfo.LLen(`c:` + vid).Result()
-	if err != nil {
-		return -1, err
-	}
-	return count, nil
-}
-
-func GetVideoCommentList(vid string, pageNum, pageSize int64) (*[]string, error) {
-	list, err := redisDBVideoInfo.LRange(`c:`+vid, (pageNum-1)*pageSize, pageNum*pageSize-1).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -167,16 +118,16 @@ func DeleteVideoAndAllAbout(vid string) error {
 	videoPipe := redisDBVideoInfo.TxPipeline()
 	commentPipe := redisDBCommentInfo.TxPipeline()
 
-	commentList, err := redisDBVideoInfo.LRange(`c:`+vid, 0, -1).Result()
+	commentList, err := db.GetVideoCommentList(vid)
 	if err != nil {
 		return err
 	}
 
-	videoPipe.Del(`c:`+vid, `l:`+vid)
+	videoPipe.Del(`l:` + vid)
 	videoPipe.ZRem(`visit`, vid)
 
-	for _, item := range commentList {
-		commentPipe.Del(`i:`+item, `c:`+item, `l:`+item)
+	for _, item := range *commentList {
+		commentPipe.Del(`l:` + item)
 	}
 
 	var (

@@ -42,18 +42,18 @@ func (service InteractService) NewCommentPublishEvent(request *interact.CommentP
 	if request.CommentId == `` {
 		request.CommentId = `-1`
 	} else {
-		parentComment, err := redis.GetCommentInfo(request.CommentId)
+		parentCommentId, err := db.GetParentCommentId(request.CommentId)
 		if err != nil {
-			return errmsg.RedisError
+			return errmsg.ServiceError
 		}
-		if parentComment.ParentId != `-1` {
-			request.CommentId = parentComment.ParentId
+		if parentCommentId != `-1` {
+			request.CommentId = parentCommentId
 		}
 	}
 	if request.VideoId == `` {
-		vid, err := redis.GetCommentVideoId(request.CommentId)
+		vid, err := db.GetCommentVideoId(request.CommentId)
 		if err != nil {
-			return errmsg.RedisError
+			return errmsg.ServiceError
 		}
 		request.VideoId = vid
 	} else {
@@ -72,37 +72,6 @@ func (service InteractService) NewCommentPublishEvent(request *interact.CommentP
 	}
 	if err := db.CreateComment(&newComment); err != nil {
 		return err
-	}
-	var (
-		wg      sync.WaitGroup
-		errChan = make(chan error, 3)
-	)
-	wg.Add(3)
-	go func() {
-		if err := redis.PutCommentInfo(&newComment); err != nil {
-			errChan <- errmsg.RedisError
-		}
-		wg.Done()
-	}()
-	go func() {
-		if err := redis.AppendVideoCommentInfo(newComment.VideoId, fmt.Sprint(newComment.Id)); err != nil {
-			errChan <- errmsg.RedisError
-		}
-		wg.Done()
-	}()
-	go func() {
-		if newComment.ParentId != `-1` {
-			if err := redis.AppendChildCommentInfo(request.CommentId, fmt.Sprint(newComment.Id)); err != nil {
-				errChan <- errmsg.RedisError
-			}
-		}
-		wg.Done()
-	}()
-	wg.Wait()
-	select {
-	case err := <-errChan:
-		return err
-	default:
 	}
 	return nil
 }
@@ -131,7 +100,7 @@ func (service InteractService) NewLikeActionEvent(request *interact.LikeActionRe
 			}
 		}
 	} else if request.CommentId != `` {
-		if !redis.IsCommentExist(request.CommentId) {
+		if exist, err := db.IsCommentExist(request.CommentId); err != nil || !exist {
 			return errmsg.ServiceError
 		}
 		switch request.ActionType {
@@ -194,7 +163,7 @@ func (service InteractService) NewCommentListEvent(request *interact.CommentList
 			return nil, err
 		}
 	} else if request.CommentId != `` {
-		if !redis.IsCommentExist(request.CommentId) {
+		if exist, err := db.IsCommentExist(request.CommentId); err != nil || !exist {
 			return nil, errmsg.ServiceError
 		}
 		if data, err = getCommentComment(request); err != nil {
@@ -223,10 +192,10 @@ func (service InteractService) NewDeleteEvent(request *interact.CommentDeleteReq
 			return err
 		}
 	} else if request.CommentId != `` {
-		if !redis.IsCommentExist(request.CommentId) {
+		if exist, err := db.IsCommentExist(request.CommentId); err != nil || !exist {
 			return errmsg.ServiceError
 		}
-		commentInfo, _ := redis.GetCommentInfo(request.CommentId)
+		commentInfo, _ := db.GetCommentInfo(request.CommentId)
 		if commentInfo.UserId != uid {
 			return errmsg.ServiceError
 		}
@@ -241,22 +210,22 @@ func (service InteractService) NewDeleteEvent(request *interact.CommentDeleteReq
 
 func getVideoComment(request *interact.CommentListRequest) (*[]*base.Comment, error) {
 	data := make([]*base.Comment, 0)
-	list, err := redis.GetVideoCommentList(request.VideoId, request.PageNum, request.PageSize)
+	list, err := db.GetVideoCommentListByPart(request.VideoId, request.PageNum, request.PageSize)
 	if err != nil {
-		return nil, errmsg.RedisError
+		return nil, errmsg.ServiceError
 	}
 	for _, item := range *list {
-		d, err := redis.GetCommentInfo(item)
+		d, err := db.GetCommentInfo(item)
 		if err != nil {
-			return nil, errmsg.RedisError
+			return nil, errmsg.ServiceError
 		}
-		likeCount, err := redis.GetCommentLikeCount(item)
+		likeCount, err := db.GetCommentLikeCount(item)
 		if err != nil {
-			return nil, errmsg.RedisError
+			return nil, errmsg.ServiceError
 		}
-		childCount, err := redis.GetCommentChildCount(item)
+		childCount, err := db.GetChildCommentCount(item)
 		if err != nil {
-			return nil, errmsg.RedisError
+			return nil, errmsg.ServiceError
 		}
 		data = append(data, &base.Comment{
 			Id:         fmt.Sprint(d.Id),
@@ -276,22 +245,22 @@ func getVideoComment(request *interact.CommentListRequest) (*[]*base.Comment, er
 
 func getCommentComment(request *interact.CommentListRequest) (*[]*base.Comment, error) {
 	data := make([]*base.Comment, 0)
-	list, err := redis.GetCommentChildList(request.CommentId, request.PageNum, request.PageSize)
+	list, err := db.GetCommentChildListByPart(request.CommentId, request.PageNum, request.PageSize)
 	if err != nil {
-		return nil, errmsg.RedisError
+		return nil, errmsg.ServiceError
 	}
 	for _, item := range *list {
-		d, err := redis.GetCommentInfo(item)
+		d, err := db.GetCommentInfo(item)
 		if err != nil {
-			return nil, errmsg.RedisError
+			return nil, errmsg.ServiceError
 		}
-		likeCount, err := redis.GetCommentLikeCount(item)
+		likeCount, err := db.GetCommentLikeCount(item)
 		if err != nil {
-			return nil, errmsg.RedisError
+			return nil, errmsg.ServiceError
 		}
-		childCount, err := redis.GetCommentChildCount(item)
+		childCount, err := db.GetChildCommentCount(item)
 		if err != nil {
-			return nil, errmsg.RedisError
+			return nil, errmsg.ServiceError
 		}
 		data = append(data, &base.Comment{
 			Id:         fmt.Sprint(d.Id),
@@ -314,7 +283,7 @@ func deleteVideo(request *interact.CommentDeleteRequest) error {
 	}
 	var (
 		wg      sync.WaitGroup
-		errChan = make(chan error, 3)
+		errChan = make(chan error, 2)
 	)
 	wg.Add(4)
 	go func() {

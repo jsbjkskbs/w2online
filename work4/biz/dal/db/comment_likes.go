@@ -22,6 +22,13 @@ func GetCommentLikeList(cid string) (*[]string, error) {
 	return &list, nil
 }
 
+func GetCommentLikeCount(cid string) (count int64, err error) {
+	if err := DB.Table(`comment_likes`).Where(`comment_id = ?`, cid).Count(&count).Error; err != nil {
+		return -1, err
+	}
+	return count, nil
+}
+
 func CreateCommentLike(commentLike *CommentLike) error {
 	if err := DB.Create(commentLike).Error; err != nil {
 		return err
