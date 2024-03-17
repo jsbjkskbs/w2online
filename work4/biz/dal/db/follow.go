@@ -2,8 +2,6 @@ package db
 
 import (
 	"time"
-
-	"gorm.io/gorm/clause"
 )
 
 type Follow struct {
@@ -14,10 +12,8 @@ type Follow struct {
 	DeletedAt  int64  `json:"deleted_at"`
 }
 
-func CreateIfNotExistsFollow(followedId, followerId string) error {
-	err := DB.Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: "video_id"}, {Name: "user_id"}},
-	}).Create(&Follow{
+func CreateFollow(followedId, followerId string) error {
+	err := DB.Create(&Follow{
 		FollowedId: followedId,
 		FollowerId: followerId,
 		CreatedAt:  time.Now().Unix(),
@@ -75,4 +71,39 @@ func GetFollowerListPaged(uid string, pageNum, pageSize int64) (*[]string, error
 		return nil, err
 	}
 	return &list, nil
+}
+
+func GetFriendListPaged(uid string, pageNum, pageSize int64) (*[]string, error) {
+	list := make([]string, 0)
+	if err := DB.
+		Select(`follower_id`).Table(`follows`).Where(`followed_id = ? and follower_id in (
+			select followed_id from follows where follower_id = ?
+		)`, uid, uid).
+		Offset(int((pageNum - 1) * pageSize)).Limit(int(pageSize)).Scan(&list).Error; err != nil {
+		return nil, err
+	}
+	return &list, nil
+}
+
+func GetFollowCount(uid string) (count int64, err error) {
+	if err := DB.Table(`follows`).Where(`follower_id = ?`, uid).Count(&count).Error; err != nil {
+		return -1, err
+	}
+	return count, nil
+}
+
+func GetFollowerCount(uid string) (count int64, err error) {
+	if err := DB.Table(`follows`).Where(`followed_id = ?`, uid).Count(&count).Error; err != nil {
+		return -1, err
+	}
+	return count, nil
+}
+
+func GetFriendCount(uid string) (count int64, err error) {
+	if err := DB.Select(`follower_id`).Table(`follows`).Where(`followed_id = ? and follower_id in (
+		select followed_id from follows where follower_id = ?
+	)`, uid, uid).Count(&count).Error; err != nil {
+		return -1, err
+	}
+	return count, nil
 }

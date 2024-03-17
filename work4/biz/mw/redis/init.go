@@ -8,55 +8,38 @@ import (
 )
 
 var (
-	redisDBAvatarUpload *redis.Client
 	redisDBVideoUpload  *redis.Client
 	redisDBVideoInfo    *redis.Client
 	redisDBCommentInfo  *redis.Client
-	redisDBRelationInfo *redis.Client
 	redisDBChatInfo     *redis.Client
 )
 
 func Load() {
 
-	redisDBAvatarUpload = redis.NewClient(&redis.Options{
+	redisDBVideoUpload = redis.NewClient(&redis.Options{
 		Addr:     constants.RedisAddr,
 		Password: constants.RedisPassword,
 		DB:       0,
 	})
 
-	redisDBVideoUpload = redis.NewClient(&redis.Options{
+	redisDBVideoInfo = redis.NewClient(&redis.Options{
 		Addr:     constants.RedisAddr,
 		Password: constants.RedisPassword,
 		DB:       1,
 	})
 
-	redisDBVideoInfo = redis.NewClient(&redis.Options{
+	redisDBCommentInfo = redis.NewClient(&redis.Options{
 		Addr:     constants.RedisAddr,
 		Password: constants.RedisPassword,
 		DB:       2,
 	})
 
-	redisDBCommentInfo = redis.NewClient(&redis.Options{
+	redisDBChatInfo = redis.NewClient(&redis.Options{
 		Addr:     constants.RedisAddr,
 		Password: constants.RedisPassword,
 		DB:       3,
 	})
 
-	redisDBRelationInfo = redis.NewClient(&redis.Options{
-		Addr:     constants.RedisAddr,
-		Password: constants.RedisPassword,
-		DB:       4,
-	})
-
-	redisDBChatInfo = redis.NewClient(&redis.Options{
-		Addr:     constants.RedisAddr,
-		Password: constants.RedisPassword,
-		DB:       5,
-	})
-
-	if _, err := redisDBAvatarUpload.Ping().Result(); err != nil {
-		panic(err)
-	}
 	if _, err := redisDBVideoUpload.Ping().Result(); err != nil {
 		panic(err)
 	}
@@ -64,9 +47,6 @@ func Load() {
 		panic(err)
 	}
 	if _, err := redisDBCommentInfo.Ping().Result(); err != nil {
-		panic(err)
-	}
-	if _, err := redisDBRelationInfo.Ping().Result(); err != nil {
 		panic(err)
 	}
 	if _, err := redisDBChatInfo.Ping().Result(); err != nil {

@@ -56,11 +56,8 @@ func (service InteractService) NewCommentPublishEvent(request *interact.CommentP
 			return errmsg.ServiceError
 		}
 		request.VideoId = vid
-	} else {
-		if !redis.IsVideoExist(request.VideoId) {
-			return errmsg.ServiceError
-		}
 	}
+
 	newComment := db.Comment{
 		VideoId:   request.VideoId,
 		ParentId:  request.CommentId,
@@ -70,6 +67,7 @@ func (service InteractService) NewCommentPublishEvent(request *interact.CommentP
 		UpdatedAt: time.Now().Unix(),
 		DeletedAt: 0,
 	}
+
 	if err := db.CreateComment(&newComment); err != nil {
 		return err
 	}
@@ -82,9 +80,6 @@ func (service InteractService) NewLikeActionEvent(request *interact.LikeActionRe
 		return errmsg.AuthenticatorError
 	}
 	if request.VideoId != `` {
-		if !redis.IsVideoExist(request.VideoId) {
-			return errmsg.ServiceError
-		}
 		switch request.ActionType {
 		case `1`:
 			{
@@ -100,9 +95,6 @@ func (service InteractService) NewLikeActionEvent(request *interact.LikeActionRe
 			}
 		}
 	} else if request.CommentId != `` {
-		if exist, err := db.IsCommentExist(request.CommentId); err != nil || !exist {
-			return errmsg.ServiceError
-		}
 		switch request.ActionType {
 		case `1`:
 			{
@@ -156,16 +148,10 @@ func (service InteractService) NewCommentListEvent(request *interact.CommentList
 		err  error
 	)
 	if request.VideoId != `` {
-		if !redis.IsVideoExist(request.VideoId) {
-			return nil, errmsg.ServiceError
-		}
 		if data, err = getVideoComment(request); err != nil {
 			return nil, err
 		}
 	} else if request.CommentId != `` {
-		if exist, err := db.IsCommentExist(request.CommentId); err != nil || !exist {
-			return nil, errmsg.ServiceError
-		}
 		if data, err = getCommentComment(request); err != nil {
 			return nil, err
 		}
@@ -181,9 +167,6 @@ func (service InteractService) NewDeleteEvent(request *interact.CommentDeleteReq
 		return errmsg.AuthenticatorError
 	}
 	if request.VideoId != `` {
-		if !redis.IsVideoExist(request.VideoId) {
-			return errmsg.ServiceError
-		}
 		videoInfo, _ := elasticsearch.GetVideoDoc(request.VideoId)
 		if videoInfo.UserId != uid {
 			return errmsg.ServiceError
@@ -192,9 +175,6 @@ func (service InteractService) NewDeleteEvent(request *interact.CommentDeleteReq
 			return err
 		}
 	} else if request.CommentId != `` {
-		if exist, err := db.IsCommentExist(request.CommentId); err != nil || !exist {
-			return errmsg.ServiceError
-		}
 		commentInfo, _ := db.GetCommentInfo(request.CommentId)
 		if commentInfo.UserId != uid {
 			return errmsg.ServiceError

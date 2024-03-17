@@ -28,7 +28,6 @@ func main() {
 
 	syncman.NewVideoSyncman().Run()
 	syncman.NewCommentSyncman().Run()
-	syncman.NewRelationSyncman().Run()
 
 	h := server.Default(server.WithHostPorts(`:10001`))
 	h.Use(

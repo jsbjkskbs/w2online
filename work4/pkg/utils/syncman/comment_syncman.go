@@ -47,7 +47,7 @@ func (sm CommentSyncman) Run() {
 				}
 				for uid, value := range *likeList {
 					if value == `1` {
-						err := db.CreateIfNotExistsCommentLike(cid, uid)
+						err := db.CreateCommentLike(cid, uid)
 						if err != nil {
 							hlog.Error(err)
 						}
