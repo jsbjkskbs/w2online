@@ -2,7 +2,6 @@ package syncman
 
 import (
 	"context"
-	"sync"
 	"time"
 	"work/biz/dal/db"
 	"work/biz/mw/redis"
@@ -48,7 +47,7 @@ func (sm CommentSyncman) Run() {
 				}
 				for uid, value := range *likeList {
 					if value == `1` {
-						err := db.CreateIfNotExistsCommentLike(cid, uid)
+						err := db.CreateCommentLike(cid, uid)
 						if err != nil {
 							hlog.Error(err)
 						}
@@ -69,9 +68,8 @@ func (sm CommentSyncman) Stop() {
 }
 
 type commentSyncData struct {
-	cid       string
-	likeList  *[]string
-	childList *[]string
+	cid      string
+	likeList *[]string
 }
 
 func commentSyncMwWhenInit() error {
@@ -81,31 +79,13 @@ func commentSyncMwWhenInit() error {
 	}
 
 	var (
-		wg       sync.WaitGroup
-		errChan  = make(chan error, 2)
 		syncList = make([]commentSyncData, 0)
 		data     commentSyncData
 	)
 	for _, cid := range *list {
 		data.cid = cid
-		wg.Add(2)
-		go func(data *commentSyncData) {
-			if data.likeList, err = db.GetCommentLikeList(data.cid); err != nil {
-				errChan <- err
-			}
-			wg.Done()
-		}(&data)
-		go func(data *commentSyncData) {
-			if data.childList, err = db.GetCommentChildList(data.cid); err != nil {
-				errChan <- err
-			}
-			wg.Done()
-		}(&data)
-		wg.Wait()
-		select {
-		case result := <-errChan:
-			return result
-		default:
+		if data.likeList, err = db.GetCommentLikeList(data.cid); err != nil {
+			return err
 		}
 		syncList = append(syncList, data)
 	}
@@ -116,29 +96,9 @@ func commentSyncMwWhenInit() error {
 }
 
 func commentSyncDB2Redis(syncList *[]commentSyncData) error {
-	var (
-		wg      sync.WaitGroup
-		errChan = make(chan error, 3)
-	)
 	for _, item := range *syncList {
-		wg.Add(2)
-		go func(cid string, childList *[]string) {
-			if err := redis.PutCommentChildInfo(cid, childList); err != nil {
-				errChan <- err
-			}
-			wg.Done()
-		}(item.cid, item.childList)
-		go func(cid string, likeList *[]string) {
-			if err := redis.PutCommentLikeInfo(cid, likeList); err != nil {
-				errChan <- err
-			}
-			wg.Done()
-		}(item.cid, item.likeList)
-		wg.Wait()
-		select {
-		case result := <-errChan:
-			return result
-		default:
+		if err := redis.PutCommentLikeInfo(item.cid, item.likeList); err != nil {
+			return err
 		}
 	}
 	return nil

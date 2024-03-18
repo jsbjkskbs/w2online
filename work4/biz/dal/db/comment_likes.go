@@ -1,10 +1,6 @@
 package db
 
-import (
-	"time"
-
-	"gorm.io/gorm/clause"
-)
+import "time"
 
 type CommentLike struct {
 	Id        int64  `json:"id"`
@@ -22,8 +18,20 @@ func GetCommentLikeList(cid string) (*[]string, error) {
 	return &list, nil
 }
 
-func CreateCommentLike(commentLike *CommentLike) error {
-	if err := DB.Create(commentLike).Error; err != nil {
+func GetCommentLikeCount(cid string) (count int64, err error) {
+	if err := DB.Table(`comment_likes`).Where(`comment_id = ?`, cid).Count(&count).Error; err != nil {
+		return -1, err
+	}
+	return count, nil
+}
+
+func CreateCommentLike(cid, uid string) error {
+	if err := DB.Create(&CommentLike{
+		CommentId: cid,
+		UserId:    uid,
+		CreatedAt: time.Now().Unix(),
+		DeletedAt: 0,
+	}).Error; err != nil {
 		return err
 	}
 	return nil
@@ -31,21 +39,6 @@ func CreateCommentLike(commentLike *CommentLike) error {
 
 func DeleteCommentLike(cid, uid string) error {
 	if err := DB.Where(`comment_id = ? and user_id = ?`, cid, uid).Delete(&CommentLike{}).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-func CreateIfNotExistsCommentLike(cid, uid string) error {
-	err := DB.Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: "video_id"}, {Name: "user_id"}},
-	}).Create(&CommentLike{
-		UserId:    uid,
-		CommentId: cid,
-		CreatedAt: time.Now().Unix(),
-		DeletedAt: 0,
-	}).Error
-	if err != nil {
 		return err
 	}
 	return nil

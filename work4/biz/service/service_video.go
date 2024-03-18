@@ -306,11 +306,13 @@ func (service VideoService) NewSearchEvent(request *video.VideoSearchRequest) (*
 }
 
 func (service VideoService) NewFeedEvent(request *video.VideoFeedRequest) (*video.VideoFeedResponse_VideoFeedResponseData, error) {
-	timestamp, _ := strconv.ParseInt(request.LatestTime, 10, 64)
-	items, _, err := elasticsearch.SearchVideoDoc(constants.ESNoKeywordsFlag,
-		constants.ESNoUsernameFilterFlag,
-		constants.ESNoPageParamFlag, constants.ESNoPageParamFlag,
-		timestamp, constants.ESNoTimeFilterFlag)
+	var timestamp int64
+	if len(request.LatestTime) == 0 {
+		timestamp = 0
+	} else {
+		timestamp, _ = strconv.ParseInt(request.LatestTime, 10, 64)
+	}
+	items, _, err := elasticsearch.RandomVideoDoc(timestamp)
 	if err != nil {
 		return nil, errmsg.ElasticError
 	}

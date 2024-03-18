@@ -9,7 +9,6 @@ import (
 	"work/biz/dal/db"
 	"work/biz/model/base/user"
 	"work/biz/mw/jwt"
-	"work/biz/mw/redis"
 	"work/pkg/constants"
 	"work/pkg/errmsg"
 	qiniuyunoss "work/pkg/qiniuyun_oss"
@@ -76,17 +75,6 @@ func (service UserService) NewAvatarUploadEvent(request *user.UserAvatarUploadRe
 	if err != nil {
 		return nil, errmsg.TokenIsInavailableError
 	}
-
-	isUploading, err := redis.IsAvatarUploading(fmt.Sprint(uid))
-	if err != nil {
-		return nil, errmsg.RedisError
-	}
-	if isUploading {
-		return nil, errmsg.FileIsUploadingError
-	}
-
-	redis.AvatarSetUploadUncompleted(fmt.Sprint(uid))
-	defer redis.AvatarSetUploadCompleted(fmt.Sprint(uid))
 
 	data, err := service.uploadAvatarToOss(fmt.Sprint(uid))
 	if err != nil {

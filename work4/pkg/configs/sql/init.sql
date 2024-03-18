@@ -6,14 +6,14 @@ create table `users`(
     `uid` bigint not null auto_increment comment '用户ID',
     `username` varchar(255) not null comment '用户名称',
     `password` varchar(255) not null comment '用户密码',
-    `avatar_url` varchar(255) not null comment '用户头像url',
+    `avatar_url` varchar(255) comment '用户头像url',
     `created_at` bigint not null comment '创建账号时间',
     `updated_at` bigint not null comment '最近登录时间',
     `deleted_at` bigint not null comment '账号删除时间',
     `mfa_enable` bool not null comment '是否使用mfa',
-    `mfa_secret` varchar(255) not null comment 'mfa秘钥',
-    primary key (`uid`),
-    key `username_password_index` (`username`,`password`) using btree comment '用户名与密码索引'
+    `mfa_secret` varchar(255) comment 'mfa秘钥',
+    primary key (uid),
+    key `username_password_index` (username,password) using btree comment '用户名与密码索引'
 ) engine =InnoDB auto_increment=10000 default charset =utf8mb4 comment ='用户表';
 
 drop table if exists `videos`;
@@ -28,9 +28,10 @@ create table `videos`(
     `created_at` bigint not null comment '创建时间',
     `updated_at` bigint not null comment '修改时间',
     `deleted_at` bigint not null comment '删除时间',
-    primary key (`id`),
-    key `time` (`created_at`) using btree comment '时间查询索引',
-    key `author` (`created_at`) using btree comment '作者查询索引'
+    primary key (id),
+    foreign key (user_id) references users(uid),
+    key `time` (created_at) using btree comment '时间查询索引',
+    key `author` (user_id) using btree comment '作者查询索引'
 ) engine =InnoDB auto_increment=10000 default charset=utf8mb4 comment '视频表';
 
 drop table if exists `comments`;
@@ -43,9 +44,13 @@ create table `comments`(
     `created_at` bigint not null comment '创建时间',
     `updated_at` bigint not null comment '更新时间',
     `deleted_at` bigint not null comment '删除时间',
-    primary key (`id`),
-    key `video_index` (`video_id`) using btree comment '视频ID索引'
+    primary key (id),
+    foreign key (user_id) references users(uid),
+    foreign key (video_id) references videos(id),
+    foreign key (parent_id) references comments(id),
+    key `video_index` (video_id) using btree comment '视频ID索引'
 ) engine =InnoDB auto_increment=10000 default charset =utf8mb4 comment '评论表';
+insert ignore into comments values (-1,0,0,-1,'',0,0,0); /* 预留id,防止无法插入 */
 
 drop table if exists `video_likes`;
 create table `video_likes`(
@@ -54,10 +59,13 @@ create table `video_likes`(
     `video_id` bigint not null comment '被点赞视频ID',
     `created_at` bigint not null comment '确认时间',
     `deleted_at` bigint not null comment '取消时间', /* 默认设为时间戳最小值 */
-    primary key (`id`),
-    key `user_id_video_id_index` (`user_id`,`video_id`) using btree comment '点赞者与视频索引',
-    key `user_id_index` (`user_id`) using btree comment '点赞者ID索引',
-    key `videos_id_index` (`video_id`) using btree comment '视频ID索引'
+    primary key (id),
+    unique key `user_id_video_id_no_duplicate` (user_id,video_id),
+    foreign key (user_id) references users(uid),
+    foreign key (video_id) references videos(id),
+    key `user_id_video_id_index` (user_id,video_id) using btree comment '点赞者与视频索引',
+    key `user_id_index` (user_id) using btree comment '点赞者ID索引',
+    key `videos_id_index` (video_id) using btree comment '视频ID索引'
 ) engine =InnoDB auto_increment =10000 default charset =utf8mb4 comment '视频点赞表';
 
 drop table if exists `comment_likes`;
@@ -67,10 +75,13 @@ create table `comment_likes`(
     `comment_id` bigint not null comment '评论ID',
     `created_at` bigint not null comment '确认时间',
     `deleted_at` bigint not null comment '取消时间',
-    primary key (`id`),
-    key `user_id_comment_id_index` (`user_id`, `comment_id`) using btree comment '点赞者与评论索引',
-    key `user_id_index` (`user_id`) using btree comment '点赞者索引',
-    key `comment_id_index` (`comment_id`) using btree comment '评论ID索引'
+    primary key (id),
+    unique key `user_id_comment_id_no_duplicate` (user_id,comment_id),
+    foreign key (user_id) references users(uid),
+    foreign key (comment_id) references comments(id),
+    key `user_id_comment_id_index` (user_id, comment_id) using btree comment '点赞者与评论索引',
+    key `user_id_index` (user_id) using btree comment '点赞者索引',
+    key `comment_id_index` (comment_id) using btree comment '评论ID索引'
 ) engine =InnoDB auto_increment =10000 default charset =utf8mb4 comment '评论点赞表';
 
 drop table if exists `follows`;
@@ -80,12 +91,16 @@ create table `follows`(
     `follower_id` bigint not null comment '粉丝ID',
     `created_at` bigint not null comment '关系创建时间',
     `deleted_at` bigint not null comment '关系取消时间',
-    primary key (`id`),
-    key `followed_id_follower_id_index` (`followed_id`,`follower_id`) using btree comment '被关注者与粉丝索引',
-    key `followed_id_index` (`followed_id`) using btree comment '被关注者索引',
-    key `follower_id_index` (`follower_id`) using btree comment '粉丝索引'
+    primary key (id),
+    unique key `follower_followed_no_duplicate` (followed_id,follower_id),
+    foreign key (follower_id) references users(uid),
+    foreign key (followed_id) references users(uid),
+    key `followed_id_follower_id_index` (followed_id,follower_id) using btree comment '被关注者与粉丝索引',
+    key `followed_id_index` (followed_id) using btree comment '被关注者索引',
+    key `follower_id_index` (follower_id) using btree comment '粉丝索引'
 ) engine =InnoDB auto_increment =10000 default charset =utf8mb4 comment '关注表';
 
+# 预留,但未用到
 drop table if exists `messages`;
 create table `messages`(
     `id`           bigint       not null auto_increment comment '自增记录序号',
