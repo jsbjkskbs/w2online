@@ -1,7 +1,7 @@
 ## West2-Online(Golang 下半年综合考核)
 
 ### 备注
-[如何启动？](/docs/quickstart/guide.md)
+[如何启动？](./docs/quickstart/guide.md)
 
 ### 接口实现
 
@@ -50,4 +50,4 @@
 - 以一天为有效日期,会对未完成的上传请求进行删除操作(删除暂存文件夹,删除Redis上传记录)
 
 ### 更新日志
-[20240301之前](/docs/logs/update_logs_01.md)
+[20240301之前](./docs/logs/update_logs_01.md)
