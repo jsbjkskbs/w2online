@@ -20,7 +20,7 @@
 1. Redis用户配置-[docker-compose-env.env](../../docker-compose-env.env)&[docker-compose.yaml](../../docker-compose.yaml)
 
 ### C.ElasticSearch&Kibana
-1. ElasticSearch&Kibana配置-[docker-compose-env.env](/docker-compose-env.env)&[docker-compose.yaml](../../docker-compose.yaml)
+1. ElasticSearch&Kibana配置-[docker-compose-env.env](../../docker-compose-env.env)&[docker-compose.yaml](../../docker-compose.yaml)
 
 ### D.OSS(七牛云)
 1. OSS秘钥、Bucket、域名-[config.json](../../config.json)
