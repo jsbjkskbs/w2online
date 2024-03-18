@@ -1,13 +1,7 @@
 ## West2-Online(Golang 下半年综合考核)
 
 ### 备注
-
-#### ElasticSearch(7.17.16)采用的插件有：
-1. elasticsearch-analysis-ik-7.17.16
-#### 请下载并提取到./pkg/configs/es/plugins内
-#### 或在docker-compose.yaml中为elastic节点添加指令
-    ./bin/plugin-install <plugin name or url>
-#### 由于docker-compose.yml对所有容器应用桥接模式,共用一个虚拟网络,故go的连接地址应当是带有容器名并为容器内端口的一段地址,如`redis:6379`(`container-name = redis`   `port = 16379:6379`)
+[如何启动？](/docs/quickstart/guide.md)
 
 ### 接口实现
 
@@ -52,31 +46,8 @@
 #### 其他(如运行时出错)
 - 暂无
 
-### 数据删除逻辑
+#### 数据删除逻辑
 - 以一天为有效日期,会对未完成的上传请求进行删除操作(删除暂存文件夹,删除Redis上传记录)
 
 ### 更新日志
-
-#### 2024.1.29 (1st upload)
-- 采用hertz框架
-- 完成用户模块
-- 完成视频模块(其中视频上传为分片上传，被拆分为四个接口)
-- 引入Mysql+Redis+ElasticSearch+OSS(qiniuyun)
-
-#### 2024.1.30 (2nd upload)
-- 完成互动模块
-
-#### 2024.1.31 (3rd upload)
-- 完成社交模块(至此完成全部寒假要求的接口,仅剩余部分额外要求的接口)
-- 修改了docker-compose中的连接逻辑(work由host模式变为bridge模式,全部容器由一个共同net连接)
-- 由于社交中关注与粉丝关系在Redis内的数据结构为Set,无法正常完成分页功能,故访问数据库以获取列表。而好友关系由Redis中Set的交集获取，可能会产生无序的问题。
-
-#### 2024.2.1 (4th upload)
-- 完成WebSocket聊天
-
-#### 2024.2.1 (5th upload)
-- 完成所提供的全部接口
-- 基本改良或统一各个package返回的error格式
-
-#### 2024.2.1 (6th upload)
-- 添加项目树文件(./tree.txt)
+[20240301之前](/docs/logs/update_logs_01.md)
