@@ -11,6 +11,7 @@ import (
 	"work/biz/model/base/interact"
 	"work/biz/mw/elasticsearch"
 	"work/biz/mw/jwt"
+	"work/biz/mw/rabbitmq"
 	"work/biz/mw/redis"
 	"work/pkg/constants"
 	"work/pkg/errmsg"
@@ -68,7 +69,7 @@ func (service InteractService) NewCommentPublishEvent(request *interact.CommentP
 		DeletedAt: 0,
 	}
 
-	if err := db.CreateComment(&newComment); err != nil {
+	if err := rabbitmq.CommentMQ.Send(&newComment); err != nil {
 		return err
 	}
 	return nil

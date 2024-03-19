@@ -7,6 +7,7 @@ import (
 // 中间件连接
 var (
 	MysqlDSN                 string
+	RabbitmqDSN              string
 	RedisAddr, RedisPassword string
 	ElasticAddr              string
 )

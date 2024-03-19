@@ -47,3 +47,5 @@
 ## 备注
 由于[docker-compose.yaml](../../docker-compose.yaml)对所有容器应用桥接模式,共用一个虚拟网络,故go的连接地址应当是带有容器名并为容器内端口的一段地址,如`redis:6379`(`container-name = redis`   `port = 16379:6379`)
 
+服务端镜像内的config.json并非完全正确，应当根据实际情况进行修改[适用本配置样例](./config-example.json)
+

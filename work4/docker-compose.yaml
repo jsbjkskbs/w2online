@@ -30,6 +30,22 @@ services:
     networks:
       - docker_net
 
+  rabbitmq:
+    image: rabbitmq:3.8.5-management
+    container_name: rabbitmq
+    ports:
+      - ${RABBIT_MQ_PORT}:5672
+      - ${RABBIT_MQ_M_PORT}:15672
+    environment:
+      - TZ=${RABBIT_MQ_TZ}
+      - RABBITMQ_DEFAULT_USER=${RABBIT_MQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBIT_MQ_PASS}
+    volumes:
+      - ./pkg/data/rabbitmq:/var/lib/rabbitmq
+    networks:
+      - docker_net
+
+
   es01:
     image: elasticsearch:7.17.16
     container_name: es01

@@ -13,6 +13,11 @@ require (
 )
 
 require (
+	github.com/rabbitmq/amqp091-go v1.9.0 // indirect
+	github.com/streadway/amqp v1.1.0 // indirect
+)
+
+require (
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/aws/aws-sdk-go v1.43.21 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
