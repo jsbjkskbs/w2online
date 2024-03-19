@@ -3,6 +3,7 @@ package cfgloader
 import (
 	"work/biz/dal"
 	"work/biz/mw/elasticsearch"
+	"work/biz/mw/rabbitmq"
 	"work/biz/mw/redis"
 	"work/biz/mw/sentinel"
 	"work/pkg/constants"
@@ -38,14 +39,21 @@ func Run() error {
 
 func loadConfig() {
 	constants.MysqlDSN = globalConfig.GetString("MysqlDSN")
+	hlog.Info("MysqlDSN:" + constants.MysqlDSN)
 	dal.Load()
 
 	constants.RedisAddr = globalConfig.GetString("RedisAddr")
 	constants.RedisPassword = globalConfig.GetString("RedisPassword")
+	hlog.Info("RedisAddr:" + constants.RedisAddr)
 	redis.Load()
 
 	constants.ElasticAddr = globalConfig.GetString("ElasticAddr")
+	hlog.Info("ElasticAddr:" + constants.ElasticAddr)
 	elasticsearch.Load()
+
+	constants.RabbitmqDSN = globalConfig.GetString("RabbitmqDSN")
+	hlog.Info("RabbitmqDSN:" + constants.RabbitmqDSN)
+	rabbitmq.Load()
 
 	qiniuyunoss.Bucket = globalConfig.GetString("OssBucket")
 	qiniuyunoss.SecretKey = globalConfig.GetString("OssSecretKey")

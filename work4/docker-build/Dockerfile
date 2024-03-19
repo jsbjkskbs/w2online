@@ -20,7 +20,7 @@ FROM jrottenberg/ffmpeg:4.4-alpine
 
 RUN mkdir "/app"
 COPY --from=builder /go/src/main /app/main
-COPY config.json /app
+COPY config.json .
 
 RUN chmod +x /app/main
 
