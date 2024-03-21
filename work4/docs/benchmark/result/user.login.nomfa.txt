@@ -1,0 +1,8 @@
+go test -benchtime=10s -benchmem -run=^$ -bench ^BenchmarkUserLoginNoMFA$ work
+goos: linux
+goarch: amd64
+pkg: work
+cpu: 11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz
+BenchmarkUserLoginNoMFA-16              23718            498988 ns/op           33123 B/op        437 allocs/op
+PASS
+ok      work    17.025s

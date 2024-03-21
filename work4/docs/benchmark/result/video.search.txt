@@ -1,0 +1,8 @@
+go test -benchtime=10s -benchmem -run=^$ -bench ^BenchmarkVideoSearch$ work
+goos: linux
+goarch: amd64
+pkg: work
+cpu: 11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz
+BenchmarkVideoSearch-16            15920            751299 ns/op          108048 B/op        504 allocs/op
+PASS
+ok      work    19.653s

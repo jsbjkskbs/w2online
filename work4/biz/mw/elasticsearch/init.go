@@ -1,8 +1,8 @@
 package elasticsearch
 
 import (
+	"io/ioutil"
 	"log"
-	"os"
 	"work/pkg/constants"
 
 	"github.com/olivere/elastic/v7"
@@ -17,8 +17,9 @@ func Load() {
 	elasticClient, err = elastic.NewClient(
 		elastic.SetURL(constants.ElasticAddr),
 		elastic.SetSniff(false),
-		elastic.SetInfoLog(log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile|log.Lmicroseconds)),
-		elastic.SetErrorLog(log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile|log.Lmicroseconds)),
+		elastic.SetInfoLog(log.New(ioutil.Discard, "", log.LstdFlags|log.Lshortfile|log.Lmicroseconds)),  //debug as os.stdout
+		elastic.SetErrorLog(log.New(ioutil.Discard, "", log.LstdFlags|log.Lshortfile|log.Lmicroseconds)), //debug as os.stderr
+		elastic.SetTraceLog(log.New(ioutil.Discard, "", log.LstdFlags|log.Lshortfile|log.Lmicroseconds)),
 	)
 
 	newVideoIndex()

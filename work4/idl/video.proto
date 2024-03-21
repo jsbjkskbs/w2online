@@ -102,7 +102,7 @@ message VideoPopularResponse {
 message VideoSearchRequest {
     string access_token = 1[(api.header)="Access-Token"];
     string refresh_token = 2[(api.header)="Refresh-Token"];
-    string keywords = 3[(api.go_tag)='json:"keywords,required"'];
+    string keywords = 3[(api.go_tag)='json:"keywords"'];
     int64 page_num = 4[(api.go_tag)='json:"page_num,required"'];
     int64 page_size = 5[(api.go_tag)='json:"page_size,required"'];
     int64 from_date = 6[(api.body)="from_date"];

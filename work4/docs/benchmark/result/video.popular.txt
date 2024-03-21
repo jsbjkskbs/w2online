@@ -1,0 +1,8 @@
+go test -benchtime=10s -benchmem -run=^$ -bench ^BenchmarkVideoPopular$ work
+goos: linux
+goarch: amd64
+pkg: work
+cpu: 11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz
+BenchmarkVideoPopular-16           10000           1003488 ns/op          164448 B/op        553 allocs/op
+PASS
+ok      work    10.202s
