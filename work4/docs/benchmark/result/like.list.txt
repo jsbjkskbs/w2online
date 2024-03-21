@@ -1,0 +1,8 @@
+go test -benchtime=10s -benchmem -run=^$ -bench ^BenchmarkLikeList$ work
+goos: linux
+goarch: amd64
+pkg: work
+cpu: 11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz
+BenchmarkLikeList-16               13772            875805 ns/op           95687 B/op        483 allocs/op
+PASS
+ok      work    20.952s
