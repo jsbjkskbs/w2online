@@ -41,17 +41,18 @@ func (sm VideoSyncman) Run() {
 			}
 			var (
 				wg                       sync.WaitGroup
-				errChan                  = make(chan error, 3)
+				errChan                  = make(chan error, 4)
 				visitCount, commentCount int64
-				likeList                 *map[string]string
+				likeList                 *[]string
 				vidList                  *[]string
+				dislikeList              *[]string
 			)
 			var err error
 			if vidList, err = db.GetVideoIdList(); err != nil {
 				hlog.Warn(err)
 			}
 			for _, vid := range *vidList {
-				wg.Add(3)
+				wg.Add(4)
 				go func() {
 					var err error
 					if visitCount, err = redis.GetVideoVisitCount(vid); err != nil {
@@ -70,7 +71,14 @@ func (sm VideoSyncman) Run() {
 				}()
 				go func() {
 					var err error
-					if likeList, err = redis.GetVideoLikeList(vid); err != nil {
+					if likeList, err = redis.GetNewUpdateVideoLikeList(vid); err != nil {
+						errChan <- err
+					}
+					wg.Done()
+				}()
+				go func() {
+					var err error
+					if dislikeList, err = redis.GetNewDeleteVideoLikeList(vid); err != nil {
 						errChan <- err
 					}
 					wg.Done()
@@ -82,26 +90,40 @@ func (sm VideoSyncman) Run() {
 					continue
 				default:
 				}
-				likeCount := 0
-				for uid, value := range *likeList {
-					if value == `1` {
-						likeCount++
-						err := db.CreateIfNotExistsVideoLike(vid, uid)
-						if err != nil {
-							hlog.Error(err)
-						}
-					} else {
-						err := db.DeleteVideoLike(vid, uid)
-						if err != nil {
-							hlog.Error(err)
-						}
+				likeCount, err := redis.GetVideoLikeCount(vid)
+				if err != nil {
+					hlog.Error(err)
+					continue
+				}
+				for _, uid := range *likeList {
+					if err := db.CreateVideoLike(&db.VideoLike{
+						UserId:    uid,
+						VideoId:   vid,
+						CreatedAt: time.Now().Unix(),
+						DeletedAt: 0,
+					}); err != nil {
+						hlog.Error(err)
+					}
+					if err := redis.AppendVideoLikeInfoToStaticSpace(vid, uid); err != nil {
+						hlog.Error(err)
+					}
+					if err := redis.DeleteVideoLikeInfoFromDynamicSpace(vid, uid); err != nil {
+						hlog.Error(err)
+					}
+				}
+				for _, uid := range *dislikeList {
+					if err := db.DeleteVideoLike(vid, uid); err != nil {
+						hlog.Error(err)
+					}
+					if err := redis.DeleteVideoLikeInfoFromDynamicSpace(vid, uid); err != nil {
+						hlog.Error(err)
 					}
 				}
 				if err := db.UpdateVideoVisit(vid, fmt.Sprint(visitCount)); err != nil {
 					hlog.Error(err)
 				}
 
-				err := elasticsearch.UpdateVideoLikeVisitAndCommentCount(vid, fmt.Sprint(likeCount), fmt.Sprint(visitCount), fmt.Sprint(commentCount))
+				err = elasticsearch.UpdateVideoLikeVisitAndCommentCount(vid, fmt.Sprint(likeCount), fmt.Sprint(visitCount), fmt.Sprint(commentCount))
 				if err != nil {
 					hlog.Error(err)
 				}

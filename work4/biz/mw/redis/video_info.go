@@ -10,18 +10,13 @@ import (
 )
 
 func PutVideoLikeInfo(vid string, uidList *[]string) error {
-	exist, err := redisDBVideoInfo.Exists(`l:` + vid).Result()
-	if err != nil {
-		return err
-	}
 	pipe := redisDBVideoInfo.TxPipeline()
-	if exist != 0 {
-		pipe.Del(`l:` + vid)
-	}
+	pipe.Del(`l:` + vid)
+	pipe.Del(`nl:` + vid)
 	for _, item := range *uidList {
-		pipe.HSet(`l:`+vid, item, 1)
+		pipe.SAdd(`l:`+vid, item)
 	}
-	if _, err = pipe.Exec(); err != nil {
+	if _, err := pipe.Exec(); err != nil {
 		return err
 	}
 	return nil
@@ -40,8 +35,25 @@ func AppendVideoLikeInfo(vid, uid string) error {
 	if !IsVideoExist(vid) {
 		return errmsg.NoSuchVideoError
 	}
-	_, err := redisDBVideoInfo.HSet(`l:`+vid, uid, 1).Result()
+	_, err := redisDBVideoInfo.ZAdd(`nl:`+vid, redis.Z{Score: 1, Member: uid}).Result()
 	if err != nil {
+		return err
+	}
+	if _, err := redisDBVideoInfo.SRem(`l:`+vid, uid).Result(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func AppendVideoLikeInfoToStaticSpace(vid, uid string) error {
+	if _, err := redisDBVideoInfo.SAdd(`l:`+vid, uid).Result(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteVideoLikeInfoFromDynamicSpace(vid, uid string) error {
+	if _, err := redisDBVideoInfo.ZRem(`nl:`+vid, uid).Result(); err != nil {
 		return err
 	}
 	return nil
@@ -51,15 +63,11 @@ func RemoveVideoLikeInfo(vid, uid string) error {
 	if !IsVideoExist(vid) {
 		return errmsg.NoSuchVideoError
 	}
-	lExist, err := redisDBVideoInfo.HExists(`l:`+vid, uid).Result()
+	_, err := redisDBVideoInfo.ZAdd(`nl:`+vid, redis.Z{Score: 2, Member: uid}).Result()
 	if err != nil {
 		return err
 	}
-	if !lExist {
-		return nil
-	}
-	_, err = redisDBVideoInfo.HSet(`l:`+vid, uid, 2).Result()
-	if err != nil {
+	if _, err := redisDBVideoInfo.SRem(`l:`+vid, uid).Result(); err != nil {
 		return err
 	}
 	return nil
@@ -74,19 +82,61 @@ func IncrVideoVisitInfo(vid string) error {
 }
 
 func IsVideoLikedByUser(vid, uid string) (bool, error) {
-	exist, err := redisDBVideoInfo.HExists(`l:`+vid, uid).Result()
+	exist, err := redisDBVideoInfo.SIsMember(`l:`+vid, uid).Result()
 	if err != nil {
-		return true, err
+		return false, err
 	}
-	return exist, nil
+	if !exist {
+		_, err := redisDBVideoInfo.ZRank(`nl:`+vid, uid).Result()
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+	} else {
+		return true, nil
+	}
 }
 
-func GetVideoLikeList(vid string) (*map[string]string, error) {
-	list, err := redisDBVideoInfo.HGetAll(`l:` + vid).Result()
+func GetVideoLikeList(vid string) (*[]string, error) {
+	list, err := redisDBVideoInfo.SMembers(`l:` + vid).Result()
+	if err != nil {
+		return nil, err
+	}
+	nList, err := GetNewUpdateVideoLikeList(vid)
+	if err != nil {
+		return nil, err
+	}
+	list = append(list, *nList...)
+	return &list, nil
+}
+
+func GetNewUpdateVideoLikeList(vid string) (*[]string, error) {
+	list, err := redisDBVideoInfo.ZRangeByScore(`nl:`+vid, redis.ZRangeBy{Min: `1`, Max: `1`}).Result()
 	if err != nil {
 		return nil, err
 	}
 	return &list, nil
+}
+
+func GetNewDeleteVideoLikeList(vid string) (*[]string, error) {
+	list, err := redisDBVideoInfo.ZRangeByScore(`nl:`+vid, redis.ZRangeBy{Min: `2`, Max: `2`}).Result()
+	if err != nil {
+		return nil, err
+	}
+	return &list, nil
+}
+
+func GetVideoLikeCount(vid string) (int64, error) {
+	var count int64
+	var err error
+	if count, err = redisDBVideoInfo.SCard(`l:` + vid).Result(); err != nil {
+		return -1, err
+	}
+	if nCount, err := redisDBVideoInfo.ZCount(`nl:`+vid, `1`, `1`).Result(); err != nil {
+		return -1, err
+	} else {
+		return count + nCount, nil
+	}
 }
 
 func GetVideoVisitCount(vid string) (int64, error) {

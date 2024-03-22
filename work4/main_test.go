@@ -8,7 +8,9 @@ import (
 	"log"
 	"testing"
 	"work/biz/mw/jwt"
+	"work/biz/mw/redis"
 	cfgloader "work/pkg/utils/cfg_loader"
+	"work/pkg/utils/syncman"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
@@ -17,20 +19,20 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
 
-/*
-func Test_main(t *testing.T) {
-	tests := []struct {
-		name string
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			main()
-		})
-	}
+func TestFunc(t *testing.T) {
+	hInitWithSync()
+	// Any func here
+	redis.AppendVideoLikeInfo(`10003`, `10004`)
+	redis.AppendVideoLikeInfoToStaticSpace(`10003`, `10004`)
+	redis.DeleteVideoLikeInfoFromDynamicSpace(`10003`, `10004`)
 }
-*/
+
+func hInitWithSync() *server.Hertz {
+	h := hInit()
+	syncman.NewCommentSyncman().Run()
+	syncman.NewVideoSyncman().Run()
+	return h
+}
 
 func hInit() *server.Hertz {
 	log.SetOutput(ioutil.Discard)
@@ -189,7 +191,7 @@ func BenchmarkVideoSearch(b *testing.B) {
 
 func BenchmarkLikeAction(b *testing.B) {
 	const (
-		token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdG9rZW5fZmllbGQiOnsiVWlkIjoiMTAwMDQifSwiZXhwIjoxNzExMDMxODg5LCJvcmlnX2lhdCI6MTcxMTAyODI4OX0.gCpVOMoKmDS4iEzzl2ZKlxKwM9ivBX8XBWqsoS5h1GQ`
+		token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdG9rZW5fZmllbGQiOnsiVWlkIjoiMTAwMDQifSwiZXhwIjoxNzExMTMwNzY3LCJvcmlnX2lhdCI6MTcxMTEyNzE2N30.dhkp9QS4HgCobTmIKy7mREEcEz0g8xkkmI_VqQUqy1A`
 	)
 	b.StopTimer()
 	h := hInit()
