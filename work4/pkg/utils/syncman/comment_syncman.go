@@ -40,22 +40,33 @@ func (sm CommentSyncman) Run() {
 				hlog.Warn(err)
 			}
 			for _, cid := range *cidList {
-				likeList, err := redis.GetCommentLikeList(cid)
+				likeList, err := redis.GetNewUpdateCommentLikeList(cid)
 				if err != nil {
 					hlog.Error(err)
 					continue
 				}
-				for uid, value := range *likeList {
-					if value == `1` {
-						err := db.CreateCommentLike(cid, uid)
-						if err != nil {
-							hlog.Error(err)
-						}
-					} else {
-						err := db.DeleteCommentLike(cid, uid)
-						if err != nil {
-							hlog.Error(err)
-						}
+				for _, uid := range *likeList {
+					if err := db.CreateCommentLike(cid, uid); err != nil {
+						hlog.Error(err)
+					}
+					if err := redis.AppendCommentLikeInfoToStaticSpace(cid, uid); err != nil {
+						hlog.Error(err)
+					}
+					if err := redis.DeleteCommentLikeInfoFromDynamicSpace(cid, uid); err != nil {
+						hlog.Error(err)
+					}
+				}
+				dislikeList, err := redis.GetNewDeleteCommentLikeList(cid)
+				if err != nil {
+					hlog.Error(err)
+					continue
+				}
+				for _, uid := range *dislikeList {
+					if err := db.DeleteCommentLike(cid, uid); err != nil {
+						hlog.Error(err)
+					}
+					if err := redis.DeleteCommentLikeInfoFromDynamicSpace(cid, uid); err != nil {
+						hlog.Error(err)
 					}
 				}
 			}

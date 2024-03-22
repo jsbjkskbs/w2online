@@ -12,7 +12,7 @@
 |/video/list|[video.list.txt](./result/video.list.txt)||
 |/video/popular|[video.popular.txt](./result/video.popular.txt)||
 |/video/search|[video.search.txt](./result/video.search.txt)||
-|/action/like|[action.like.txt](./result/action.lile.txt)||
+|/action/like|[like.action.txt](./result/like.action.txt)||
 |/like/list|[like.list.txt](./result/like.list.txt)||
 |/comment/list|[comment.list.txt](./result/comment.list.txt)||
 |/following/list|[following.list.txt](./result/following.list.txt)||

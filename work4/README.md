@@ -50,7 +50,7 @@
 - 以一天为有效日期,会对未完成的上传请求进行删除操作(删除暂存文件夹,删除Redis上传记录)
 
 ### 更新日志
-[20240301之前](./docs/logs/update_logs_01.md)
+[20240301之前](./docs/update_logs/update_logs_01.md)
 
 ### Benchmark
 [benchmark.md](./docs/benchmark/benchmark.md)
