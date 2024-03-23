@@ -81,11 +81,11 @@ func RecordM3U8Filename(uuid, uid, filename string) error {
 	if exist == 0 {
 		return errmsg.ParamError
 	}
-	len, err := redisDBVideoUpload.LLen("l:" + uid + ":" + uuid).Result()
+	fLen, err := redisDBVideoUpload.LLen("l:" + uid + ":" + uuid).Result()
 	if err != nil {
 		return err
 	}
-	if len == 4 {
+	if fLen == 4 {
 		return errmsg.ParamError
 	}
 	if _, err := redisDBVideoUpload.RPush("l:"+uid+":"+uuid, filename).Result(); err != nil {

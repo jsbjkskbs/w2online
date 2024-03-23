@@ -1,0 +1,256 @@
+WARN [runner] The linter 'ifshort' is deprecated (since v1.48.0) due to: The repository of the linter has been deprecated by the owner.  
+ERRO [linters_context] typechecking error: pattern ./...: open /home/cyk/Desktop/work4/w2online/work4/pkg/data/sql/#innodb_redo: permission denied 
+biz/service/service_relation.go:48: 48-84 lines are duplicate of `biz/service/service_relation.go:86-122` (dupl)
+func (service RelationService) NewFollowingListEvent(request *relation.FollowingListRequest) (*relation.FollowingListResponse_FollowingListResponseData, error) {
+        exist, err := db.UserIsExistByUid(request.UserId)
+        if err != nil {
+                return nil, errmsg.ServiceError
+        }
+        if !exist {
+                return nil, errmsg.UserDoesNotExistError
+        }
+        if request.PageNum <= 0 {
+                request.PageNum = 1
+        }
+        if request.PageSize <= 0 {
+                request.PageSize = constants.DefaultPageSize
+        }
+        list, err := db.GetFollowListPaged(request.UserId, request.PageNum, request.PageSize)
+        if err != nil {
+                return nil, errmsg.ServiceError
+        }
+        data := make([]*base.UserLite, 0)
+        for _, item := range *list {
+                user, err := db.QueryUserByUid(item)
+                if err != nil {
+                        return nil, errmsg.ServiceError
+                }
+                d := base.UserLite{
+                        Uid:       item,
+                        Username:  user.Username,
+                        AvatarUrl: user.AvatarUrl,
+                }
+                data = append(data, &d)
+        }
+        total, err := db.GetFollowCount(request.UserId)
+        if err != nil {
+                return nil, errmsg.ServiceError
+        }
+        return &relation.FollowingListResponse_FollowingListResponseData{Items: data, Total: total}, nil
+}
+biz/service/service_relation.go:86: 86-122 lines are duplicate of `biz/service/service_relation.go:48-84` (dupl)
+func (service RelationService) NewFollowerEvent(request *relation.FollowerListRequest) (*relation.FollowerListResponse_FollowerListResponseData, error) {
+        exist, err := db.UserIsExistByUid(request.UserId)
+        if err != nil {
+                return nil, errmsg.ServiceError
+        }
+        if !exist {
+                return nil, errmsg.UserDoesNotExistError
+        }
+        if request.PageNum <= 0 {
+                request.PageNum = 1
+        }
+        if request.PageSize <= 0 {
+                request.PageSize = constants.DefaultPageSize
+        }
+        list, err := db.GetFollowerListPaged(request.UserId, request.PageNum, request.PageSize)
+        if err != nil {
+                return nil, errmsg.ServiceError
+        }
+        data := make([]*base.UserLite, 0)
+        for _, item := range *list {
+                user, err := db.QueryUserByUid(item)
+                if err != nil {
+                        return nil, errmsg.ServiceError
+                }
+                d := base.UserLite{
+                        Uid:       item,
+                        Username:  user.Username,
+                        AvatarUrl: user.AvatarUrl,
+                }
+                data = append(data, &d)
+        }
+        total, err := db.GetFollowerCount(request.UserId)
+        if err != nil {
+                return nil, errmsg.ServiceError
+        }
+        return &relation.FollowerListResponse_FollowerListResponseData{Items: data, Total: total}, nil
+}
+biz/mw/rabbitmq/producer.go:46:11: Error return value of `json.Marshal` is not checked (errcheck)
+        message, _ := json.Marshal(data)
+                 ^
+biz/mw/redis/video_info.go:26:9: Error return value of `strconv.ParseFloat` is not checked (errcheck)
+        score, _ := strconv.ParseFloat(visitCount, 64)
+               ^
+biz/mw/redis/video_upload.go:65:20: Error return value of `strconv.ParseInt` is not checked (errcheck)
+        chunkTotalNumber, _ := strconv.ParseInt(r[0], 10, 64)
+                          ^
+biz/mw/elasticsearch/video_doc.go:62:8: Error return value is not checked (errcheck)
+                d := item.(Video)
+                     ^
+biz/mw/elasticsearch/video_doc.go:235:18: Error return value of `strconv.ParseInt` is not checked (errcheck)
+                newVisitCount, _   = strconv.ParseInt(visitCount, 10, 64)
+                               ^
+biz/mw/elasticsearch/video_doc.go:236:17: Error return value of `strconv.ParseInt` is not checked (errcheck)
+                newLikeCount, _    = strconv.ParseInt(likeCount, 10, 64)
+                              ^
+biz/mw/elasticsearch/video_doc.go:314:8: Error return value of `resp.Source.MarshalJSON` is not checked (errcheck)
+        data, _ := resp.Source.MarshalJSON()
+              ^
+biz/mw/elasticsearch/video_doc.go:316:16: Error return value of `json.Unmarshal` is not checked (errcheck)
+        json.Unmarshal(data, &d)
+                      ^
+biz/mw/jwt/jwt.go:89:18: Error return value of `AccessTokenJwtMiddleware.TokenGenerator` is not checked (errcheck)
+        tokenString, _, _ := AccessTokenJwtMiddleware.TokenGenerator(data)
+                        ^
+biz/mw/jwt/jwt.go:232:18: Error return value of `AccessTokenJwtMiddleware.TokenGenerator` is not checked (errcheck)
+        tokenString, _, _ := AccessTokenJwtMiddleware.TokenGenerator(data)
+                        ^
+biz/service/service_interact.go:171:14: Error return value of `elasticsearch.GetVideoDoc` is not checked (errcheck)
+                videoInfo, _ := elasticsearch.GetVideoDoc(request.VideoId)
+                           ^
+biz/service/service_interact.go:179:16: Error return value of `db.GetCommentInfo` is not checked (errcheck)
+                commentInfo, _ := db.GetCommentInfo(request.CommentId)
+                             ^
+biz/service/service_video.go:94:12: Error return value of `strconv.Atoi` is not checked (errcheck)
+        uidInt64, _ := strconv.Atoi(uid)
+                  ^
+biz/service/service_video.go:252:10: Error return value of `os.Mkdir` is not checked (errcheck)
+        os.Mkdir(`./pkg/data/temp/video/`+uid+`_`+uuid, os.ModePerm)
+                ^
+biz/handler/ws_chat/ws_chat.go:23:21: Error return value of `conn.WriteMessage` is not checked (errcheck)
+                        conn.WriteMessage(websocket.TextMessage, BadConnection)
+                                         ^
+biz/handler/ws_chat/ws_chat.go:26:20: Error return value of `conn.WriteMessage` is not checked (errcheck)
+                conn.WriteMessage(websocket.TextMessage, []byte(`Welcome, `+uid))
+                                 ^
+biz/handler/ws_chat/ws_chat.go:31:21: Error return value of `conn.WriteMessage` is not checked (errcheck)
+                        conn.WriteMessage(websocket.TextMessage, BadConnection)
+                                         ^
+biz/handler/ws_chat/ws_chat.go:34:17: Error return value of `s.Logout` is not checked (errcheck)
+                defer s.Logout()
+                              ^
+biz/service/service_video.go:54: Function 'NewUploadCompleteEvent' has too many statements (68 > 40) (funlen)
+func (service VideoService) NewUploadCompleteEvent(request *video.VideoPublishCompleteRequest) error {
+biz/mw/redis/comment_info.go:12:11: string `nl:` has 17 occurrences, make it a constant (goconst)
+        pipe.Del(`nl:` + cid)
+                 ^
+biz/service/service_video.go:45:34: string `./pkg/data/temp/video/` has 10 occurrences, make it a constant (goconst)
+        if err := service.deleteTempDir(`./pkg/data/temp/video/` + uid + `_` + request.Uuid); err != nil {
+                                        ^
+biz/service/service_video.go:78:53: string `video.mp4` has 3 occurrences, make it a constant (goconst)
+                `./pkg/data/temp/video/`+uid+`_`+request.Uuid+`/`+`video.mp4`)
+                                                                  ^
+biz/mw/redis/init.go:11: File is not `gofmt`-ed with `-s` (gofmt)
+        redisDBVideoUpload  *redis.Client
+        redisDBVideoInfo    *redis.Client
+        redisDBCommentInfo  *redis.Client
+        redisDBChatInfo     *redis.Client
+biz/dal/db/comment.go:17: File is not `gofumpt`-ed (gofumpt)
+
+biz/dal/db/init.go:3: File is not `gofumpt`-ed (gofumpt)
+import (
+biz/dal/db/init.go:8: File is not `gofumpt`-ed (gofumpt)
+
+        "work/pkg/constants"
+biz/dal/db/comment.go:78: line is 163 characters (lll)
+        if err := DB.Table(`comments`).Where(`video_id = ?`, vid).Select("id").Limit(int(pageSize)).Offset(int(pageNum-1) * int(pageSize)).Scan(&list).Error; err != nil {
+biz/dal/db/comment.go:94: line is 164 characters (lll)
+        if err := DB.Table(`comments`).Where(`parent_id = ?`, cid).Select(`id`).Limit(int(pageSize)).Offset(int(pageNum-1) * int(pageSize)).Scan(&list).Error; err != nil {
+biz/dal/db/follow.go:62: line is 173 characters (lll)
+        if err := DB.Table(`follows`).Where(`follower_id = ?`, uid).Select(`followed_id`).Offset(int((pageNum - 1) * pageSize)).Limit(int(pageSize)).Scan(&list).Error; err != nil {
+biz/dal/db/follow.go:70: line is 173 characters (lll)
+        if err := DB.Table(`follows`).Where(`followed_id = ?`, uid).Select(`follower_id`).Offset(int((pageNum - 1) * pageSize)).Limit(int(pageSize)).Scan(&list).Error; err != nil {
+biz/dal/db/user.go:131: line is 142 characters (lll)
+        err := DB.Table(`users`).Where(`uid = ?`, uid).Model(&User{}).Updates(map[string]interface{}{`mfa_enable`: true, `mfa_secret`: secret}).Error
+biz/dal/db/video_likes.go:56: line is 156 characters (lll)
+        err := DB.Table(`video_likes`).Where(`user_id = ?`, uid).Select("video_id").Limit(int(pageSize)).Offset((int(pageNum-1) * int(pageSize))).Scan(&list).Error
+biz/mw/elasticsearch/video_doc.go:117: line is 121 characters (lll)
+func SearchVideoDoc(keywords, username string, pageSize, pageNum, fromDate, toDate int64) ([]*base.Video, int64, error) {
+biz/mw/elasticsearch/video_doc.go:240: line is 124 characters (lll)
+                Script(elastic.NewScript(`"ctx._source.info.visit_count=params.new_visit_count"`).Param("new_visit_count", newVisitCount))
+biz/mw/elasticsearch/video_doc.go:244: line is 132 characters (lll)
+                Script(elastic.NewScript(`"ctx._source.info.comment_count=params.new_comment_count"`).Param("new_comment_count", newCommentCount))
+biz/service/service_interact.go:119: line is 141 characters (lll)
+func (service InteractService) NewLikeListEvent(request *interact.LikeListRequest) (*interact.LikeListResponse_LikeListResponseData, error) {
+biz/service/service_interact.go:139: line is 153 characters (lll)
+func (service InteractService) NewCommentListEvent(request *interact.CommentListRequest) (*interact.CommentListResponse_CommentListResponseData, error) {
+biz/service/service_relation.go:124: line is 149 characters (lll)
+func (service RelationService) NewFriendListEvent(request *relation.FriendListRequest) (*relation.FriendListResponse_FriendListResponseData, error) {
+biz/service/service_user.go:87: line is 123 characters (lll)
+func (service UserService) NewQrcodeEvent(request *user.AuthMfaQrcodeRequest) (*user.AuthMfaQrcodeResponse_Qrcode, error) {
+biz/service/service_user.go:146: line is 124 characters (lll)
+                        if avatarUrl, err = qiniuyunoss.UploadAvatar(&avatarRawData, uploadRawData.Size, fmt.Sprint(uid), fileType); err != nil {
+biz/service/service_video.go:256: line is 139 characters (lll)
+func (service VideoService) NewSearchEvent(request *video.VideoSearchRequest) (*video.VideoSearchResponse_VideoSearchResponseData, error) {
+biz/service/service_video.go:308: line is 131 characters (lll)
+func (service VideoService) NewFeedEvent(request *video.VideoFeedRequest) (*video.VideoFeedResponse_VideoFeedResponseData, error) {
+biz/service/service_video.go:322: line is 131 characters (lll)
+func (service VideoService) NewListEvent(request *video.VideoListRequest) (*video.VideoListResponse_VideoListResponseData, error) {
+biz/service/service_video.go:369: line is 143 characters (lll)
+func (service VideoService) NewPopularEvent(request *video.VideoPopularRequest) (*video.VideoPopularResponse_VideoPopularResponseData, error) {
+biz/service/service_interact.go:83:2: `if request.VideoId != ``` has complex nested blocks (complexity: 6) (nestif)
+        if request.VideoId != `` {
+        ^
+biz/service/service_interact.go:170:2: `if request.VideoId != ``` has complex nested blocks (complexity: 6) (nestif)
+        if request.VideoId != `` {
+        ^
+biz/mw/rabbitmq/msg2mysql.go:19:2: found a struct that contains a context.Context field (containedctx)
+        ctx        context.Context
+        ^
+biz/mw/rabbitmq/msg2mysql.go:21:2: found a struct that contains a context.Context field (containedctx)
+        sysCtx     context.Context
+        ^
+biz/service/service_interact.go:24:2: found a struct that contains a context.Context field (containedctx)
+        ctx context.Context
+        ^
+biz/mw/elasticsearch/video_doc.go:125:9: mnd: Magic number: 5, in <argument> detected (gomnd)
+        wg.Add(5)
+               ^
+biz/mw/elasticsearch/video_doc.go:190:9: mnd: Magic number: 3, in <argument> detected (gomnd)
+        wg.Add(3)
+               ^
+biz/mw/rabbitmq/msg2mysql.go:45:37: mnd: Magic number: 65536, in <argument> detected (gomnd)
+                dataChan:   make(chan db.Comment, 65536),
+                                                  ^
+biz/mw/rabbitmq/msg2mysql.go:46:33: mnd: Magic number: 65536, in <argument> detected (gomnd)
+                msgChan:    make(chan []byte, 65536),
+                                              ^
+biz/mw/redis/video_info.go:185:30: mnd: Magic number: 2, in <argument> detected (gomnd)
+                errChan = make(chan error, 2)
+                                           ^
+biz/mw/redis/video_info.go:187:9: mnd: Magic number: 2, in <argument> detected (gomnd)
+        wg.Add(2)
+               ^
+biz/mw/redis/video_upload.go:98:67: mnd: Magic number: 3, in <argument> detected (gomnd)
+        if filename, err := redisDBVideoUpload.LRange("l:"+uid+":"+uuid, 3, 3).Result(); err != nil || filename[0] == `` {
+                                                                         ^
+biz/mw/redis/video_upload.go:106:63: mnd: Magic number: 2, in <argument> detected (gomnd)
+        info, err := redisDBVideoUpload.LRange("l:"+uid+":"+uuid, 1, 2).Result()
+                                                                     ^
+biz/mw/redis/video_upload.go:88:12: mnd: Magic number: 4, in <condition> detected (gomnd)
+        if len == 4 {
+                  ^
+biz/mw/redis/comment_info.go:89:62: mnd: Magic number: 2, in <assign> detected (gomnd)
+        _, err := redisDBCommentInfo.ZAdd(`nl:`+cid, redis.Z{Score: 2, Member: uid}).Result()
+                                                                    ^
+biz/mw/redis/init.go:34:13: mnd: Magic number: 2, in <assign> detected (gomnd)
+                DB:       2,
+                          ^
+biz/mw/redis/init.go:40:13: mnd: Magic number: 3, in <assign> detected (gomnd)
+                DB:       3,
+                          ^
+biz/mw/redis/video_info.go:66:60: mnd: Magic number: 2, in <assign> detected (gomnd)
+        _, err := redisDBVideoInfo.ZAdd(`nl:`+vid, redis.Z{Score: 2, Member: uid}).Result()
+                                                                  ^
+biz/service/service_interact.go:269:9: mnd: Magic number: 4, in <argument> detected (gomnd)
+        wg.Add(4)
+               ^
+biz/service/service_video.go:114:30: mnd: Magic number: 3, in <argument> detected (gomnd)
+        errChan := make(chan error, 3)
+                                    ^
+biz/service/service_video.go:258:9: mnd: Magic number: 6, in <argument> detected (gomnd)
+        wg.Add(6)
+               ^
+biz/mw/redis/video_upload.go:84:2: variable len has same name as predeclared identifier (predeclared)
+        len, err := redisDBVideoUpload.LLen("l:" + uid + ":" + uuid).Result()

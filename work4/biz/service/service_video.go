@@ -27,6 +27,10 @@ type VideoService struct {
 	c   *app.RequestContext
 }
 
+var (
+	TempVideoFolderPath string
+)
+
 func NewVideoService(ctx context.Context, c *app.RequestContext) *VideoService {
 	return &VideoService{
 		ctx: ctx,
@@ -42,7 +46,7 @@ func (service VideoService) NewCancleUploadEvent(request *video.VideoPublishCanc
 	if request.Uuid == `` {
 		return errmsg.ParamError
 	}
-	if err := service.deleteTempDir(`./pkg/data/temp/video/` + uid + `_` + request.Uuid); err != nil {
+	if err := service.deleteTempDir(TempVideoFolderPath + uid + `_` + request.Uuid); err != nil {
 		return errmsg.ServiceError
 	}
 	if _, err = redis.FinishVideoEvent(request.Uuid, uid); err != nil {
@@ -74,14 +78,14 @@ func (service VideoService) NewUploadCompleteEvent(request *video.VideoPublishCo
 		return errmsg.RedisError
 	}
 
-	err = utils.M3u8ToMp4(`./pkg/data/temp/video/`+uid+`_`+request.Uuid+`/`+m3u8name,
-		`./pkg/data/temp/video/`+uid+`_`+request.Uuid+`/`+`video.mp4`)
+	err = utils.M3u8ToMp4(TempVideoFolderPath+uid+`_`+request.Uuid+`/`+m3u8name,
+		TempVideoFolderPath+uid+`_`+request.Uuid+`/`+`video.mp4`)
 	if err != nil {
 		return errmsg.ServiceError
 	}
 
-	err = utils.GenerateMp4CoverJpg(`./pkg/data/temp/video/`+uid+`_`+request.Uuid+`/`+`video.mp4`,
-		`./pkg/data/temp/video/`+uid+`_`+request.Uuid+`/`+`cover.jpg`)
+	err = utils.GenerateMp4CoverJpg(TempVideoFolderPath+uid+`_`+request.Uuid+`/`+`video.mp4`,
+		TempVideoFolderPath+uid+`_`+request.Uuid+`/`+`cover.jpg`)
 	if err != nil {
 		return errmsg.ServiceError
 	}
@@ -114,14 +118,14 @@ func (service VideoService) NewUploadCompleteEvent(request *video.VideoPublishCo
 	errChan := make(chan error, 3)
 	wg.Add(3)
 	go func() {
-		videoUrl, err = qiniuyunoss.UploadVideo(`./pkg/data/temp/video/`+uid+`_`+request.Uuid+`/`+`video.mp4`, vid)
+		videoUrl, err = qiniuyunoss.UploadVideo(TempVideoFolderPath+uid+`_`+request.Uuid+`/`+`video.mp4`, vid)
 		if err != nil {
 			errChan <- errmsg.OssUploadError
 		}
 		wg.Done()
 	}()
 	go func() {
-		coverUrl, err = qiniuyunoss.UploadVideoCover(`./pkg/data/temp/video/`+uid+`_`+request.Uuid+`/`+`cover.jpg`, vid)
+		coverUrl, err = qiniuyunoss.UploadVideoCover(TempVideoFolderPath+uid+`_`+request.Uuid+`/`+`cover.jpg`, vid)
 		if err != nil {
 			errChan <- errmsg.OssUploadError
 		}
@@ -172,7 +176,7 @@ func (service VideoService) NewUploadCompleteEvent(request *video.VideoPublishCo
 		return errmsg.RedisError
 	}
 
-	err = service.deleteTempDir(`./pkg/data/temp/video/` + uid + `_` + request.Uuid)
+	err = service.deleteTempDir(TempVideoFolderPath + uid + `_` + request.Uuid)
 	if err != nil {
 		return errmsg.ServiceError
 	}
@@ -225,7 +229,7 @@ func (service VideoService) NewUploadingEvent(request *video.VideoPublishUploadi
 		}
 	}
 
-	err = service.saveTempData(`./pkg/data/temp/video/`+uid+`_`+request.Uuid+`/`+request.Filename, data)
+	err = service.saveTempData(TempVideoFolderPath+uid+`_`+request.Uuid+`/`+request.Filename, data)
 	if err != nil {
 		return errmsg.ServiceError
 	}
@@ -249,7 +253,9 @@ func (service VideoService) NewUploadEvent(request *video.VideoPublishStartReque
 	if err != nil {
 		return ``, errmsg.RedisError
 	}
-	os.Mkdir(`./pkg/data/temp/video/`+uid+`_`+uuid, os.ModePerm)
+	if err := os.Mkdir(TempVideoFolderPath+uid+`_`+uuid, os.ModePerm); err != nil {
+		return ``, errmsg.ServiceError
+	}
 	return uuid, nil
 }
 
