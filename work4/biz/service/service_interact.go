@@ -168,7 +168,10 @@ func (service InteractService) NewDeleteEvent(request *interact.CommentDeleteReq
 		return errmsg.AuthenticatorError
 	}
 	if request.VideoId != `` {
-		videoInfo, _ := elasticsearch.GetVideoDoc(request.VideoId)
+		videoInfo, err := elasticsearch.GetVideoDoc(request.VideoId)
+		if err != nil {
+			return errmsg.ElasticError
+		}
 		if videoInfo.UserId != uid {
 			return errmsg.ServiceError
 		}
@@ -176,7 +179,10 @@ func (service InteractService) NewDeleteEvent(request *interact.CommentDeleteReq
 			return err
 		}
 	} else if request.CommentId != `` {
-		commentInfo, _ := db.GetCommentInfo(request.CommentId)
+		commentInfo, err := db.GetCommentInfo(request.CommentId)
+		if err != nil {
+			return errmsg.ServiceError
+		}
 		if commentInfo.UserId != uid {
 			return errmsg.ServiceError
 		}

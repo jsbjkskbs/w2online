@@ -19,5 +19,7 @@
             "threshold": 1000,
             "statintervalinms": 1000
         }
-    }
+    },
+
+    "TempVideoFolderPath": "./pkg/data/temp/video/"
 }

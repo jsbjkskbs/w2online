@@ -6,6 +6,7 @@ import (
 	"work/biz/mw/rabbitmq"
 	"work/biz/mw/redis"
 	"work/biz/mw/sentinel"
+	"work/biz/service"
 	"work/pkg/constants"
 	qiniuyunoss "work/pkg/qiniuyun_oss"
 
@@ -63,4 +64,6 @@ func loadConfig() {
 
 	sentinel.Rules = globalConfig.GetStringMap("SentinelRules")
 	sentinel.Load()
+
+	service.TempVideoFolderPath = globalConfig.GetString("TempVideoFolderPath")
 }

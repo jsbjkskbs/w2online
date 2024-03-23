@@ -8,7 +8,6 @@ import (
 	"log"
 	"testing"
 	"work/biz/mw/jwt"
-	"work/biz/mw/redis"
 	cfgloader "work/pkg/utils/cfg_loader"
 	"work/pkg/utils/syncman"
 
@@ -19,13 +18,11 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
 
+
 func TestFunc(t *testing.T) {
-	hInitWithSync()
 	// Any func here
-	redis.AppendVideoLikeInfo(`10003`, `10004`)
-	redis.AppendVideoLikeInfoToStaticSpace(`10003`, `10004`)
-	redis.DeleteVideoLikeInfoFromDynamicSpace(`10003`, `10004`)
 }
+
 
 func hInitWithSync() *server.Hertz {
 	h := hInit()

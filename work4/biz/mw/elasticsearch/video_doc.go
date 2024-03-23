@@ -59,7 +59,10 @@ func DeleteVideoDoc(vid string) error {
 func searchRespCovert(resp *elastic.SearchResult) ([]*base.Video, int64) {
 	dataList := make([]*base.Video, 0)
 	for _, item := range resp.Each(reflect.TypeOf(Video{})) {
-		d := item.(Video)
+		d, ok := item.(Video)
+		if !ok {
+			continue
+		}
 		temp := base.Video{
 			Id:           d.Info.Id,
 			UserId:       d.UserId,

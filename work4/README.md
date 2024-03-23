@@ -10,7 +10,7 @@
 |/user/register|无|
 |/user/login|无|
 |/user/info|双token生成的新access-token会放置在response的Header内|
-|/user/avatar/upload|用redis缓存上传状态，防止上传过程中仍执行上传操作|
+|/user/avatar/upload|无|
 |/auth/mfa/qrcode|无|
 |/auth/mfa/bind|无|
 |/video/publish|被拆分为以下四个接口|
@@ -31,7 +31,7 @@
 |/follower/list|无|
 |/following/list|无|
 |/friend/list|无|
-|ws://127.0.0.1:10000|未明确需求,故用户连接后接受全部(不管是否为to_user_id)的离线消息|
+|ws://127.0.0.1:10000|无|
 
 ### 数据同步逻辑
 
