@@ -3,11 +3,15 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
+	"encoding/base64"
 	"io/ioutil"
 	"log"
+	"os"
 	"testing"
 	"work/biz/mw/jwt"
+	"work/pkg/utils"
 	cfgloader "work/pkg/utils/cfg_loader"
 	"work/pkg/utils/syncman"
 
@@ -18,11 +22,19 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
 
-
 func TestFunc(t *testing.T) {
 	// Any func here
+	b := utils.NewRsaService()
+	hlog.Info(b.Build([]byte(`MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6KlV8XKwncTCLoCiFDzpTObECUdSOkBFBrek/Pz0zDZ0G6Llf9NUXiA+3IvOQ2uvaIOVJBbwXYs3GAnhM3H+fWQ9AcbEcR+jXBm+yrqrVQzb7tANvy1V2w0+UZoVB5AKpOYURvCin1qU65X26Q2sg96mh2i+utwkDNMwmHdpVO4wTFsO4iwFPBJNhekM/+WleiyROQaEqUwY1Xxbwfv0GnsoqhpRM/yxDgtexrDKSmnXRWNsce/7ReyqCDLC9osJtDigCIOkUtYQ/6qs9tWg+jaAMQ4/KgnhFreJn6J0vykUXqIM2HTexgtC4nEKbsJaMVeg5u5Uqg5NJlyBUgZpgwIDAQAB`)))
+	msg, _ := b.Encode([]byte(`Hello World`))
+	hlog.Info(base64.StdEncoding.EncodeToString(msg))
+	hlog.Info(b.GetPublicKeyPemFormat())
+	hlog.Info(b.GetPrivateKeyPemFormat())
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n')
+	hlog.Info(input)
+	hlog.Info(b.Decode([]byte(input)))
 }
-
 
 func hInitWithSync() *server.Hertz {
 	h := hInit()

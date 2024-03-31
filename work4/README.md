@@ -31,7 +31,7 @@
 |/follower/list|无|
 |/following/list|无|
 |/friend/list|无|
-|ws://127.0.0.1:10000|无|
+|ws://127.0.0.1:10000|采用RSA加密|
 
 ### 数据同步逻辑
 
