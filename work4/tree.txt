@@ -6,6 +6,7 @@
 │   │   │   ├── comment_likes.go
 │   │   │   ├── follow.go
 │   │   │   ├── init.go
+│   │   │   ├── messages.go
 │   │   │   ├── user.go
 │   │   │   ├── video.go
 │   │   │   └── video_likes.go
@@ -46,14 +47,20 @@
 │   │   │   └── video_index_init.go
 │   │   ├── jwt
 │   │   │   └── jwt.go
-│   │   └── redis
-│   │       ├── avatar_upload.go
-│   │       ├── chat_info.go
-│   │       ├── comment_info.go
-│   │       ├── init.go
-│   │       ├── relation_info.go
-│   │       ├── video_info.go
-│   │       └── video_upload.go
+│   │   ├── rabbitmq
+│   │   │   ├── base.go
+│   │   │   ├── consumer.go
+│   │   │   ├── init.go
+│   │   │   ├── msg2mysql.go
+│   │   │   └── producer.go
+│   │   ├── redis
+│   │   │   ├── comment_info.go
+│   │   │   ├── init.go
+│   │   │   ├── video_info.go
+│   │   │   └── video_upload.go
+│   │   └── sentinel
+│   │       ├── cfg.go
+│   │       └── load.go
 │   ├── router
 │   │   ├── authfunc
 │   │   │   └── auth_logic.go
@@ -85,6 +92,7 @@
 │       ├── service_video.go
 │       └── service_ws_chat.go
 ├── build.sh
+├── config.json
 ├── docker-build
 │   └── Dockerfile
 ├── docker_build.sh
@@ -119,10 +127,13 @@
 │   ├── errmsg
 │   │   └── errmsg.go
 │   ├── qiniuyun_oss
-|   |   ├── config.go
+│   │   ├── cfg.go
 │   │   └── qiniuyun_oss.go
 │   └── utils
 │       ├── base64.go
+│       ├── cfg_loader
+│       │   ├── cfg_path.go
+│       │   └── loader.go
 │       ├── dustman
 │       │   └── dustman.go
 │       ├── encrypt.go
@@ -134,12 +145,10 @@
 │       ├── slice_page.go
 │       ├── syncman
 │       │   ├── comment_syncman.go
-│       │   ├── relation_syncman.go
 │       │   └── video_syncman.go
 │       └── time.go
 ├── README.md
 ├── router_gen.go
 ├── router.go
-├── script
-│   └── bootstrap.sh
-└── tree.txt
+└── script
+    └── bootstrap.sh
