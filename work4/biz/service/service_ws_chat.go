@@ -5,11 +5,11 @@ import (
 	"time"
 	"work/biz/dal/db"
 	"work/biz/mw/jwt"
-	"work/biz/mw/redis"
 	"work/pkg/errmsg"
 	"work/pkg/utils"
 
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/hertz-contrib/websocket"
 )
 
@@ -22,6 +22,7 @@ type ChatService struct {
 type _user struct {
 	username string
 	conn     *websocket.Conn
+	rsa      *utils.RsaService
 }
 
 var userMap = make(map[string]*_user)
@@ -43,7 +44,21 @@ func (service ChatService) Login() error {
 	if err != nil {
 		return err
 	}
-	userMap[uid] = &_user{conn: service.conn, username: user.Username}
+	rsaClientKey := service.c.GetHeader(`rsa_public_key`)
+	r := utils.NewRsaService()
+	if err := r.Build(rsaClientKey); err != nil {
+		hlog.Info(err)
+		return errmsg.ServiceError
+	}
+	userMap[uid] = &_user{conn: service.conn, username: user.Username, rsa: r}
+	publicKey, err := r.GetPublicKeyPemFormat()
+	if err != nil {
+		return errmsg.ServiceError
+	}
+	if err := service.conn.WriteMessage(websocket.TextMessage, []byte(publicKey)); err != nil {
+		return errmsg.ServiceError
+	}
+
 	return nil
 }
 
@@ -56,7 +71,7 @@ func (service ChatService) Logout() error {
 	return nil
 }
 
-func (service ChatService) SendMessage(content string) error {
+func (service ChatService) SendMessage(content []byte) error {
 	from, err := jwt.CovertJWTPayloadToString(service.ctx, service.c)
 	if err != nil {
 		return errmsg.AuthenticatorError
@@ -70,24 +85,32 @@ func (service ChatService) SendMessage(content string) error {
 		return errmsg.UserDoesNotExistError
 	}
 	toConn := userMap[to]
+	fromConn := userMap[from]
 	switch toConn {
-	case nil: //离线
+	case nil: // 离线
 		{
-			if err := redis.PushMessage(from, to, content, time.Now().Unix()); err != nil {
+			plainText, err := fromConn.rsa.Decode(content)
+			if err != nil {
+				return errmsg.ServiceError
+			}
+			if err := db.CreateMessage(from, to, string(plainText)); err != nil {
 				return errmsg.RedisError
 			}
 		}
 	default: // 在线
 		{
-			err := toConn.conn.WriteMessage(websocket.TextMessage,
-				newWebsocketMessage(from,
-					content,
-					utils.ConvertTimestampToStringDefault(time.Now().Unix())),
-			)
+			plainText, err := fromConn.rsa.Decode(content)
 			if err != nil {
 				return errmsg.ServiceError
 			}
-
+			ciphertext, err := toConn.rsa.Encode(userinfoAppend(plainText, from))
+			if err != nil {
+				return errmsg.ServiceError
+			}
+			err = toConn.conn.WriteMessage(websocket.BinaryMessage, ciphertext)
+			if err != nil {
+				return errmsg.ServiceError
+			}
 		}
 	}
 	return nil
@@ -98,18 +121,23 @@ func (service ChatService) ReadOfflineMessage() error {
 	if err != nil {
 		return errmsg.AuthenticatorError
 	}
-	for !redis.IsMessageQueueEmpty(uid) {
-		from, content, when, err := redis.PopMessage(uid)
+	list, err := db.PopMessage(uid)
+	if err != nil {
+		return errmsg.ServiceError
+	}
+	toConn := userMap[uid]
+	for _, item := range *list {
+		ciphertext, err := toConn.rsa.Encode(userinfoAppend([]byte(item.Content), item.FromUserId))
 		if err != nil {
-			return errmsg.RedisError
+			return errmsg.ServiceError
 		}
-		if err := service.conn.WriteMessage(websocket.TextMessage, newWebsocketMessage(from, content, when)); err != nil {
+		err = service.conn.WriteMessage(websocket.BinaryMessage, ciphertext)
+		if err != nil {
 			return errmsg.ServiceError
 		}
 	}
 	return nil
 }
-
-func newWebsocketMessage(uid, content, when string) []byte {
-	return []byte(when + ` [` + uid + `]: ` + content)
+func userinfoAppend(rawText []byte, from string) []byte {
+	return []byte(utils.ConvertTimestampToStringDefault(time.Now().Unix()) + ` [` + from + `]: ` + string(rawText))
 }

@@ -45,7 +45,7 @@ func Handler(ctx context.Context, c *app.RequestContext) {
 				return
 			}
 
-			if err := s.SendMessage(string(message)); err != nil {
+			if err := s.SendMessage(message); err != nil {
 				conn.WriteMessage(websocket.TextMessage, BadConnection)
 				return
 			}
