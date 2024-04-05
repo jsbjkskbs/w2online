@@ -272,15 +272,9 @@ func deleteVideo(request *interact.CommentDeleteRequest) error {
 		wg      sync.WaitGroup
 		errChan = make(chan error, 2)
 	)
-	wg.Add(4)
+	wg.Add(3)
 	go func() {
 		if err := db.DeleteVideo(request.VideoId); err != nil {
-			errChan <- errmsg.ServiceError
-		}
-		wg.Done()
-	}()
-	go func() {
-		if err := db.DeleteCommentAndCommentLikeAboutVideo(request.VideoId); err != nil {
 			errChan <- errmsg.ServiceError
 		}
 		wg.Done()
@@ -316,7 +310,7 @@ func deleteComment(request *interact.CommentDeleteRequest) error {
 	)
 	wg.Add(2)
 	go func() {
-		if err := db.DeleteChildAndLikesOfParentAndChild(request.CommentId); err != nil {
+		if err := db.DeleteComment(request.CommentId); err != nil {
 			errChan <- errmsg.RedisError
 		}
 		wg.Done()

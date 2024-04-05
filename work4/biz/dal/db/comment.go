@@ -51,7 +51,7 @@ func GetCommentInfo(commentId string) (*Comment, error) {
 
 func GetParentCommentId(commentId string) (string, error) {
 	var parentId string
-	if err := DB.Table(`comments`).Where(`id = ?`, commentId).Select(`parent_id`).Find(parentId).Error; err != nil {
+	if err := DB.Table(`comments`).Where(`id = ?`, commentId).Select(`parent_id`).Find(&parentId).Error; err != nil {
 		return ``, err
 	}
 	return parentId, nil
@@ -59,7 +59,7 @@ func GetParentCommentId(commentId string) (string, error) {
 
 func GetCommentVideoId(commentId string) (string, error) {
 	var videoId string
-	if err := DB.Table(`comments`).Where(`id = ?`, commentId).Select(`video_id`).Find(videoId).Error; err != nil {
+	if err := DB.Table(`comments`).Where(`id = ?`, commentId).Select(`video_id`).Find(&videoId).Error; err != nil {
 		return ``, err
 	}
 	return videoId, nil
@@ -103,48 +103,6 @@ func GetCommentIdList() (*[]string, error) {
 		return nil, err
 	}
 	return &list, nil
-}
-
-func DeleteCommentAndCommentLikeAboutVideo(vid string) error {
-	list, err := GetVideoCommentList(vid)
-	if err != nil {
-		return err
-	}
-	for _, item := range *list {
-		if err := DeleteCommentLikeAboutComment(item); err != nil {
-			return err
-		}
-	}
-	if err := DB.Where(`video_id = ?`, vid).Delete(&Comment{}).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-func DeleteChildComment(cid string) error {
-	if err := DB.Where("parent_id = ?", cid).Delete(&Comment{}).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-func DeleteChildAndLikesOfParentAndChild(cid string) error {
-	list, err := GetCommentChildList(cid)
-	if err != nil {
-		return err
-	}
-	if err := DeleteChildComment(cid); err != nil {
-		return err
-	}
-	if err := DeleteCommentLikeAboutComment(cid); err != nil {
-		return err
-	}
-	for _, item := range *list {
-		if err := DeleteCommentLikeAboutComment(item); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func IsCommentExist(cid string) (bool, error) {

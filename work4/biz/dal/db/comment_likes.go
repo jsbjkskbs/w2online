@@ -43,10 +43,3 @@ func DeleteCommentLike(cid, uid string) error {
 	}
 	return nil
 }
-
-func DeleteCommentLikeAboutComment(cid string) error {
-	if err := DB.Where(`comment_id = ?`, cid).Delete(&CommentLike{}).Error; err != nil {
-		return err
-	}
-	return nil
-}

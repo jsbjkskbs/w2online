@@ -1,11 +1,5 @@
 package db
 
-import (
-	"time"
-
-	"gorm.io/gorm/clause"
-)
-
 type VideoLike struct {
 	Id        int64  `json:"id"`
 	UserId    string `json:"user_id"`
@@ -36,21 +30,6 @@ func DeleteVideoLike(vid, uid string) error {
 	return nil
 }
 
-func CreateIfNotExistsVideoLike(vid string, uid string) error {
-	err := DB.Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: "video_id"}, {Name: "user_id"}},
-	}).Create(&VideoLike{
-		UserId:    uid,
-		VideoId:   vid,
-		CreatedAt: time.Now().Unix(),
-		DeletedAt: 0,
-	}).Error
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func GetVideoLikeListByUserId(uid string, pageNum, pageSize int64) (*[]string, error) {
 	list := make([]string, 0)
 	err := DB.Table(`video_likes`).Where(`user_id = ?`, uid).Select("video_id").Limit(int(pageSize)).Offset((int(pageNum-1) * int(pageSize))).Scan(&list).Error
@@ -58,11 +37,4 @@ func GetVideoLikeListByUserId(uid string, pageNum, pageSize int64) (*[]string, e
 		return nil, err
 	}
 	return &list, err
-}
-
-func DeleteLikeAboutVideo(vid string) error {
-	if err := DB.Where(`video_id = ?`, vid).Delete(&VideoLike{}).Error; err != nil {
-		return err
-	}
-	return nil
 }
