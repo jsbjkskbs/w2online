@@ -1,4 +1,4 @@
-name: "Test"
+name: golangci-lint
 on:
     push:
         branches: ["main","only_view_by_owner"]
