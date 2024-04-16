@@ -1,0 +1,22 @@
+MysqlDSN: "work:work123456@tcp(localhost:13306)/work"
+
+Redis:
+    address: "localhost:16379"
+    password: "work123456"
+
+ElasticAddr: "http://localhost:9200"
+
+RabbitmqDSN: "amqp://work:work123456@localhost:5672/"
+
+Oss:
+    bucket: "your bucket"
+    secretKey: "your secret key"
+    accessKey: "your access key"
+    url: "your url"
+
+SentinelRules:
+    default:
+        threshold: 1000.0
+        statintervalinms: 1000.0
+
+TempVideoFolderPath: "./pkg/data/temp/video/"
