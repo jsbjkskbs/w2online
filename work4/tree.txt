@@ -54,8 +54,11 @@
 │   │   │   ├── msg2mysql.go
 │   │   │   └── producer.go
 │   │   ├── redis
+│   │   │   ├── avatar_upload.go.nouse
+│   │   │   ├── chat_info.go.nouse
 │   │   │   ├── comment_info.go
 │   │   │   ├── init.go
+│   │   │   ├── relation_info.go.nouse
 │   │   │   ├── video_info.go
 │   │   │   └── video_upload.go
 │   │   └── sentinel
@@ -92,16 +95,55 @@
 │       ├── service_video.go
 │       └── service_ws_chat.go
 ├── build.sh
-├── config.json
+├── code-test-result
+│   ├── codeql
+│   │   └── result.sarif
+│   └── golangci-lint
+│       ├── 2024-3-16.txt
+│       └── 2024-3-23.txt
+├── config.yaml
 ├── docker-build
+│   ├── docker-compose-env.env
+│   ├── docker-compose.yaml
 │   └── Dockerfile
-├── docker_build.sh
-├── docker-compose-env.env
-├── docker_compose_release.sh
-├── docker-compose.yaml
+├── docs
+│   ├── api
+│   │   ├── comment
+│   │   │   ├── publish.md
+│   │   │   └── publish.png
+│   │   ├── interact
+│   │   │   ├── likeaction.md
+│   │   │   └── likeaction.png
+│   │   ├── video
+│   │   │   ├── publish.md
+│   │   │   ├── publish.png
+│   │   │   └── visit.md
+│   │   └── websocket-chat
+│   │       ├── ws_chat.md
+│   │       └── ws_chat.png
+│   ├── benchmark
+│   │   ├── benchmark.md
+│   │   └── result
+│   │       ├── comment.list.txt
+│   │       ├── following.list.txt
+│   │       ├── friend.list.txt
+│   │       ├── like.action.txt
+│   │       ├── like.list.txt
+│   │       ├── user.info.txt
+│   │       ├── user.login.mfa.txt
+│   │       ├── user.login.nomfa.txt
+│   │       ├── user.register.txt
+│   │       ├── video.feed.txt
+│   │       ├── video.list.txt
+│   │       ├── video.popular.txt
+│   │       └── video.search.txt
+│   ├── quickstart
+│   │   ├── config-example.json
+│   │   └── guide.md
+│   └── update_logs
+│       └── update_logs_01.md
 ├── go.mod
 ├── go.sum
-├── hz_gen.sh
 ├── idl
 │   ├── api.proto
 │   ├── base.proto
@@ -112,6 +154,7 @@
 │   └── video.proto
 ├── main.go
 ├── main_test.go
+├── Makefile
 ├── pkg
 │   ├── configs
 │   │   ├── es
@@ -145,10 +188,12 @@
 │       ├── slice_page.go
 │       ├── syncman
 │       │   ├── comment_syncman.go
+│       │   ├── relation_syncman.go.nouse
 │       │   └── video_syncman.go
 │       └── time.go
 ├── README.md
 ├── router_gen.go
 ├── router.go
-└── script
-    └── bootstrap.sh
+├── script
+│   └── bootstrap.sh
+└── tree.txt
