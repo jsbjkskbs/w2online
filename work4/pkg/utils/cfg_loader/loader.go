@@ -20,7 +20,7 @@ var globalConfig *viper.Viper
 func Run() error {
 	globalConfig = viper.New()
 	globalConfig.SetConfigName("config")
-	globalConfig.SetConfigType("json")
+	globalConfig.SetConfigType("yaml")
 	globalConfig.AddConfigPath(configPath)
 	if err := globalConfig.ReadInConfig(); err != nil {
 		return err
@@ -43,8 +43,9 @@ func loadConfig() {
 	hlog.Info("MysqlDSN:" + constants.MysqlDSN)
 	dal.Load()
 
-	constants.RedisAddr = globalConfig.GetString("RedisAddr")
-	constants.RedisPassword = globalConfig.GetString("RedisPassword")
+	redisConfig:=globalConfig.GetStringMapString("Redis")
+	constants.RedisAddr = redisConfig["address"]
+	constants.RedisPassword = redisConfig["password"]
 	hlog.Info("RedisAddr:" + constants.RedisAddr)
 	redis.Load()
 
@@ -56,10 +57,11 @@ func loadConfig() {
 	hlog.Info("RabbitmqDSN:" + constants.RabbitmqDSN)
 	rabbitmq.Load()
 
-	qiniuyunoss.Bucket = globalConfig.GetString("OssBucket")
-	qiniuyunoss.SecretKey = globalConfig.GetString("OssSecretKey")
-	qiniuyunoss.AccessKey = globalConfig.GetString("OssAccessKey")
-	qiniuyunoss.Url = globalConfig.GetString("OssUrl")
+	qiniuyunConfig := globalConfig.GetStringMapString("OSS")
+	qiniuyunoss.Bucket = qiniuyunConfig["bucket"]
+	qiniuyunoss.SecretKey = qiniuyunConfig["secretKey"]
+	qiniuyunoss.AccessKey = qiniuyunConfig["accessKey"]
+	qiniuyunoss.Url = qiniuyunConfig["url"]
 	qiniuyunoss.Load()
 
 	sentinel.Rules = globalConfig.GetStringMap("SentinelRules")
